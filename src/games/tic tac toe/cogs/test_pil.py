@@ -1,6 +1,8 @@
 from PIL import Image, ImageDraw, ImageFile
 import os
+import io
 import discord
+import ctypes
 from discord.ext import commands
 
 
@@ -11,7 +13,7 @@ class pil_test(commands.Cog):
 
     @commands.command()
     async def test(self, ctx):
-        await ctx.send("ERR")
+        await ctx.send(self.client.Permissions)
 
 
 def setup(client):
