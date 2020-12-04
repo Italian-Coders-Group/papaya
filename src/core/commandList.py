@@ -25,3 +25,6 @@ class CommandList:
 			return self.__Commands.get( item )
 		else:
 			return getattr( self, item, default )
+
+
+instance: CommandList = CommandList()

@@ -27,7 +27,7 @@ class Server( AbstractServer ):
 	def __init__(self, guild: discord.Guild):
 		self.guild = guild
 		self.logger = get_logger( guild.name )
-		self.commands = core.commandList.CommandList()
+		self.commands = core.commandList.instance
 		# options = database.loadGuild(guild.id)
 		# print(options)
 
