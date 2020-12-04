@@ -8,7 +8,7 @@ from . import Rules
 class Server:
 
 	guildId: int
-	roleRules: Dict[str, Rules]
+	roleRules: Dict[str, Rules.Rules]
 
 	def __init__(self):
 		pass
