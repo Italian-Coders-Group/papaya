@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="PapayaBot" type="PythonConfigurationType" factoryName="Python">
     <module name="papaya" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -22,7 +22,7 @@
         <ENTRY IS_ENABLED="true" PARSER="env" PATH=".env" />
       </ENTRIES>
     </EXTENSION>
-    <option name="SCRIPT_NAME" value="C:\Users\Flavia\PycharmProjects\papaya\src\PapayaBot.py" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/PapayaBot.py" />
     <option name="PARAMETERS" value="" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
