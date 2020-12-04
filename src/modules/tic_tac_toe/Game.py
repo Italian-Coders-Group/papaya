@@ -1,5 +1,4 @@
 import discord
-import os
 from .Player import Player
 from itertools import cycle
 

@@ -1,8 +1,4 @@
-from PIL import Image, ImageDraw, ImageFile
-import os
-import io
 import discord
-import ctypes
 from modules.tic_tac_toe.Game import Game
 from discord.ext import commands
 
