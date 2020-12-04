@@ -10,5 +10,5 @@ class AbstractServer(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def Can( self, user: discord.User, ):
+	def Can( self, user: discord.User, permission: str ) -> bool:
 		pass

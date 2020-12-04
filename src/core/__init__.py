@@ -1,9 +1,7 @@
-from traceback import format_exception
-from typing import List, Dict
+from typing import Dict
 import importlib
 
-from discord import Client, Message, Embed
-import discord
+from discord import Client, Message
 
 from . import server
 from .logging import get_logger
@@ -23,13 +21,19 @@ class Bot:
 		self.client.event( self.on_message )
 
 	def run( self, token: str ):
+		""" Run the bot, its blocking """
 		self.client.run(token)
 
 	async def on_ready( self ):
+		"""	Called when the bot is ready to process incoming messages """
 		logger.info( f'{self.client.user}: Ready.' )
 		logger.info( f'The bot is currently in {len( self.client.guilds )} guilds.')
 
 	async def on_message( self, msg: Message ):
+		"""
+		Called when a message arrives
+		:param msg: the discord.Message obj
+		"""
 		if msg.guild.id not in self.servers.keys():
 			if msg.guild in self.client.guilds:
 				logger.info( f'Got message from new guild "{msg.guild.name}", adding it!' )

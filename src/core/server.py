@@ -6,7 +6,6 @@ import discord
 
 import logging
 
-# from . import database
 from .abc.server import AbstractServer
 from .logging import get_logger
 import core.commandList
@@ -28,10 +27,12 @@ class Server( AbstractServer ):
 		self.guild = guild
 		self.logger = get_logger( guild.name )
 		self.commands = core.commandList.instance
-		# options = database.loadGuild(guild.id)
-		# print(options)
 
 	async def handleMsg( self, msg: Message ):
+		"""
+		Handles a discord message object
+		:param msg: message to handle
+		"""
 		# setup
 		if not msg.content.startswith( self.prefix ):
 			return
@@ -51,10 +52,19 @@ class Server( AbstractServer ):
 		if code == 1:
 			await msg.channel.send( f'Unknown command: {cmd[ 0 ]}' )
 
-	def Can( self, user: discord.User, ):
-		pass
+	def Can( self, user: discord.User, permission: str) -> bool:
+		"""
+		Check if an user can do something
+		:param user: the user to check
+		:param permission: the permission to check for
+		:return: bool, true if the user has the permission, false otherwise
+		"""
+		return True
 
 
 def reloadModules():
+	"""
+	Reloads all importes modules on this module
+	"""
 	import importlib
 	importlib.reload( core.commandList )

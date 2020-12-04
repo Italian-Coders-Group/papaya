@@ -1,6 +1,8 @@
 import sqlalchemy
 from sqlalchemy import text, Column, UniqueConstraint, Integer
 
+# TODO: finish this
+
 
 class Database:
 
