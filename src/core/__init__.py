@@ -17,6 +17,7 @@ class Bot:
 	def __init__( self ):
 		Bot.instance = self
 		self.client = Client()
+		# register event listeners
 		self.client.event( self.on_ready )
 		self.client.event( self.on_message )
 
@@ -34,6 +35,7 @@ class Bot:
 		Called when a message arrives
 		:param msg: the discord.Message obj
 		"""
+		# add the guild to the tracked server if it doesn't exist
 		if msg.guild.id not in self.servers.keys():
 			if msg.guild in self.client.guilds:
 				logger.info( f'Got message from new guild "{msg.guild.name}", adding it!' )
@@ -41,9 +43,11 @@ class Bot:
 			else:
 				logger.warning( f'Got message form unknown guild {msg.guild.name}, ignoring.' )
 				return
+		# don't permit to use echo to get elevation
 		if msg.author == self.client.user:
 			if 'echo' not in msg.content.split(' ')[0]:
 				return
+		# reloads the server instances and modules
 		if msg.content == '$$reload':
 			await msg.channel.send('Reloading!')
 			self.servers.clear()
@@ -51,4 +55,5 @@ class Bot:
 			server.reloadModules()
 			await msg.channel.send('Reloaded!')
 		else:
+			# call the right handler for the server
 			await self.servers[ msg.guild.id ].handleMsg( msg )

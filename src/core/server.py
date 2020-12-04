@@ -63,8 +63,6 @@ class Server( AbstractServer ):
 
 
 def reloadModules():
-	"""
-	Reloads all importes modules on this module
-	"""
+	""" Reloads all importes modules on this module """
 	import importlib
 	importlib.reload( core.commandList )
