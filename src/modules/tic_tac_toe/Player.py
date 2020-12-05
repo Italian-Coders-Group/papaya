@@ -1,11 +1,12 @@
 import os
+from games.abc.basePlayer import BasePlayer
 
 
-class Player:
+class Player(BasePlayer):
 
-    def __init__(self, member_id, username, symbol):
-        self.member_id = member_id
-        self.username = username
+    def __init__(self, user, symbol):
+        self.user = user.id
         # sybol can be either X or O
 
         self.symbol = symbol
+
