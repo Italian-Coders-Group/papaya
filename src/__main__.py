@@ -7,8 +7,7 @@ core.logging.init_logging(
 )
 
 
-x = core.Bot()
-x.run(
+core.Bot().run(
 	token=os.environ.get('TOKEN')
 )
 
