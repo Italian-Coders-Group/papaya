@@ -1,4 +1,5 @@
 import traceback
+from typing import Any, Dict, List, Union, KeysView, ItemsView
 
 import discord
 from discord import Embed, Color
@@ -47,3 +48,11 @@ def getTracebackEmbed( exc: Exception ) -> Embed:
 		content=prettyExc,
 		color=discord.Color.red()
 	)
+
+
+def copyList(tocopy: Union[ List, KeysView, ItemsView] ) -> List[Any]:
+	return [ x for x in tocopy]
+
+
+def placeHolderFunc(ph0 = None, ph1 = None):
+	pass
