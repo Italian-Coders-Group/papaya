@@ -51,8 +51,14 @@ def getTracebackEmbed( exc: Exception ) -> Embed:
 
 
 def copyList(tocopy: Union[ List, KeysView, ItemsView] ) -> List[Any]:
+	"""
+	Copies an iterable to another list
+	:param tocopy: itarable to copy
+	:return: the copied list
+	"""
 	return [ x for x in tocopy]
 
 
-def placeHolderFunc(ph0 = None, ph1 = None):
+def placeHolderFunc(ph0=None, ph1=None):
+	""" Just a placeholder for functions that require a function """
 	pass
