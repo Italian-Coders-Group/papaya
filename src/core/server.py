@@ -60,9 +60,3 @@ class Server( AbstractServer ):
 		:return: bool, true if the user has the permission, false otherwise
 		"""
 		return True
-
-
-def reloadModules():
-	""" Reloads all importes modules on this module """
-	import importlib
-	importlib.reload( core.commandList )

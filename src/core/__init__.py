@@ -51,8 +51,13 @@ class Bot:
 		if msg.content == '$$reload':
 			await msg.channel.send('Reloading!')
 			self.servers.clear()
-			importlib.reload(server)
-			server.reloadModules()
+			import core.commandList
+			import core.utils
+			import modules
+			importlib.reload( server )
+			importlib.reload( core.utils )
+			importlib.reload( core.commandList )
+			modules.reloadGames()
 			await msg.channel.send('Reloaded!')
 		else:
 			# call the right handler for the server
