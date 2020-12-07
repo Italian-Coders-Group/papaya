@@ -2,7 +2,6 @@ from .Game import Game
 from core.commandList import Command
 from core.abc.server import AbstractServer
 from discord import Message, File
-from .Game import Game
 from core.utils import embed, getColor
 from PIL import Image
 import io
@@ -38,3 +37,9 @@ async def testbase(server: AbstractServer, msg: Message):
     image.save(buffer, "PNG")
     buffer.seek(0)
     await msg.channel.send(file=File(buffer, "testBase.png"))
+
+
+@Command
+async def grid(server: AbstractServer, msg: Message):
+    games = d.get(server.guild.id)
+    await msg.channel.send(games[0].grid)

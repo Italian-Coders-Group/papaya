@@ -5,6 +5,7 @@ from games.abc.baseGame import BaseGame
 import io
 import os
 from PIL import Image
+from .Grid import Grid
 
 
 class Game(BaseGame):
@@ -22,6 +23,7 @@ class Game(BaseGame):
         self.player2 = Player(player2, "o")
         self.players = cycle([self.player1, self.player2])
         self.turn = self.processTurn("data")
+        self.grid = Grid(3, 3)
 
     def processTurn(self, data):
         return next(self.players)
