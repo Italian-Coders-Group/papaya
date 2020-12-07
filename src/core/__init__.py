@@ -20,6 +20,7 @@ class Bot:
 		# register event listeners
 		self.client.event( self.on_ready )
 		self.client.event( self.on_message )
+		modules.initializeGames()
 
 	def run( self, token: str ):
 		""" Run the bot, its blocking """
