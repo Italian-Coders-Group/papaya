@@ -5,6 +5,7 @@ from discord import Client, Message
 
 from . import server
 from .logging import get_logger
+import modules
 
 logger = get_logger( 'BOT' )
 
