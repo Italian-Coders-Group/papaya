@@ -1,4 +1,4 @@
-from .Game import Game
+from .Game import Game, check_for_win
 from core.commandList import Command
 from core.abc.server import AbstractServer
 from discord import Message, File
@@ -41,5 +41,5 @@ async def testbase(server: AbstractServer, msg: Message):
 
 @Command
 async def grid(server: AbstractServer, msg: Message):
-    games = d.get(server.guild.id)
-    await msg.channel.send(games[0].grid)
+    games = [["x", "o", "x"], ["x", "x", "o"], ["o", "o", "x"]]
+    has_won = True if check_for_win(games, "o") else False

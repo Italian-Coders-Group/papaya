@@ -1,5 +1,6 @@
 import traceback
 from typing import Any, Dict, List, Union, KeysView, ItemsView
+import math
 
 import discord
 from discord import Embed, Color
@@ -57,6 +58,21 @@ def copyList(tocopy: Union[ List, KeysView, ItemsView] ) -> List[Any]:
 	:return: the copied list
 	"""
 	return [ x for x in tocopy]
+
+
+def check_distance(x0, y0, x1, y1):
+	"""
+	Utility I guess
+
+	:param x0:
+	:param y0:
+	:param x1:
+	:param y1:
+	:return:
+	"""
+	distance = math.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
+	if distance == 1:
+		return True
 
 
 def placeHolderFunc(ph0=None, ph1=None):
