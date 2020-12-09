@@ -1,8 +1,8 @@
-from abc import ABCMeta, abstractmethod as abstract
+from abc import ABCMeta, abstractmethod
 from enum import Enum
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, Union, TextIO
+from typing import Dict, Union, TextIO, Final
 
 from PIL.Image import Image
 
@@ -25,7 +25,7 @@ class AbstractFile(metaclass=ABCMeta):
 	defaultWriteMode: openingWriteMode = openingWriteMode.writeBytes
 	_compressed: bool = False
 
-	@abstract
+	@abstractmethod
 	def toBytes( self ) -> bytes:
 		"""
 		Gets the bytes from this File object
@@ -33,7 +33,7 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		pass
 
-	@abstract
+	@abstractmethod
 	def fromBytes( self, data: bytearray ) -> None:
 		"""
 		Replace the content of this File obj with the given bytes.
@@ -43,7 +43,7 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		pass
 
-	@abstract
+	@abstractmethod
 	def read( self, mode: openingReadMode ) -> Union[bytes, str]:
 		"""
 		Implementation of read.
@@ -53,17 +53,17 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		pass
 
-	@abstract
+	@abstractmethod
 	def readText( self ) -> str:
 		""" This reads text, not much to say """
 		pass
 
-	@abstract
+	@abstractmethod
 	def readBytes( self ) -> bytes:
 		""" This reads bytes, not much to say """
 		pass
 
-	@abstract
+	@abstractmethod
 	def write( self, mode: openingWriteMode, data: Union[bytes, str] ) -> None:
 		"""
 		Implementation of write.
@@ -73,7 +73,7 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		pass
 
-	@abstract
+	@abstractmethod
 	def writeText( self, data: str ) -> None:
 		"""
 		Writes text to this File
@@ -81,7 +81,7 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		pass
 
-	@abstract
+	@abstractmethod
 	def writeBytes( self, data: bytes ) -> None:
 		"""
 		Writes bytes to this File
@@ -89,27 +89,27 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		pass
 
-	@abstract
+	@abstractmethod
 	def getPath( self ) -> Union[Path, None]:
 		""" Gets the path of this file, None if its not on disk """
 		pass
 
-	@abstract
+	@abstractmethod
 	def getBytesIO( self ) -> BytesIO:
 		"""	Gets the content of this File obj as BytesIO buffer """
 		pass
 
-	@abstract
+	@abstractmethod
 	def getTextIO( self ) -> TextIO:
 		"""	Gets the content of this File obj as StringIO buffer """
 		pass
 
-	@abstract
+	@abstractmethod
 	def updateFile( self ) -> None:
 		""" Updates the file on disk """
 		pass
 
-	@abstract
+	@abstractmethod
 	def compress( self ) -> None:
 		""" Compresses the content of this File with LZMA """
 		pass
@@ -122,7 +122,7 @@ class AbstractFile(metaclass=ABCMeta):
 		""" True if this object has compressed data, False otherwise"""
 		return self._compressed
 
-	@abstract
+	@abstractmethod
 	def copy( self ) -> 'AbstractFile':
 		"""
 		Clones this object
@@ -130,17 +130,21 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		pass
 
-	@abstract
+	@abstractmethod
 	def exists( self ) -> bool:
 		""" Checks if this file exist on disk """
 		pass
 
-	@abstract
+	@abstractmethod
 	def touch( self ) -> None:
 		"""	Creates this file on disk """
 		pass
 
-	@abstract
+	@abstractmethod
+	def isFolder( self ) -> bool:
+		pass
+
+	@abstractmethod
 	def isImage( self ) -> bool:
 		"""
 		Checks if this File object is pointing to a valid image
@@ -148,7 +152,7 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		pass
 
-	@abstract
+	@abstractmethod
 	def toImage( self ) -> Image:
 		"""
 		Reads a PIL images from this file
@@ -156,24 +160,20 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		pass
 
-	@abstract
+	@abstractmethod
 	def _read( self ) -> None:
 		""" private method, do not use """
 		pass
 
-	@abstract
+	@abstractmethod
 	def __str__(self) -> str:
 		pass
 
-	@abstract
-	def __repr__(self) -> str:
-		pass
-
-	@abstract
+	@abstractmethod
 	def __enter__(self) -> 'AbstractFile':
 		pass
 
-	@abstract
+	@abstractmethod
 	def __exit__(self, exc_type, exc_val, exc_tb) -> None:
 		pass
 
@@ -196,31 +196,51 @@ class AbstractFile(metaclass=ABCMeta):
 		pass
 
 
-class AbstractFileSystem(metaclass=ABCMeta):
+class AbstractFolder( AbstractFile, metaclass=ABCMeta ):
 
-	sandbox: Path
-	cache: Dict[str, AbstractFile] = {}
-
-	@abstract
-	def getAsset( self, path: str ) -> AbstractFile:
+	@abstractmethod
+	def walk( self ) -> AbstractFile:
 		pass
 
-	@abstract
-	def getImage( self, path: str ) -> Image:
-		pass
-
-	@abstract
-	def create( self, path: str ) -> None:
-		pass
-
-	@abstract
+	@abstractmethod
 	def __iter__(self):
 		pass
 
-	@abstract
+	@abstractmethod
+	def __next__(self) -> AbstractFile:
+		pass
+
+
+class AbstractFileSystem(metaclass=ABCMeta):
+
+	sandbox: Path
+	fileForm: AbstractFolder = None
+	cache: Dict[str, Union[ AbstractFile, 'AbstractFileSystem' ] ] = {}
+
+	@abstractmethod
+	def getAsset( self, path: str, layer: int = 0 ) -> AbstractFile:
+		pass
+
+	@abstractmethod
+	def getFolder( self, path: Union[Path, str], layer: int = 0 ) -> AbstractFolder:
+		pass
+
+	@abstractmethod
+	def create( self, path: str ) -> None:
+		pass
+
+	@abstractmethod
+	def asFolder( self ) -> AbstractFolder:
+		pass
+
+	@abstractmethod
+	def __iter__(self):
+		pass
+
+	@abstractmethod
 	def __next__(self):
 		pass
 
-	@abstract
+	@abstractmethod
 	def __contains__(self, item) -> bool:
 		pass

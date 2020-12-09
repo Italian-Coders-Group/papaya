@@ -1,11 +1,13 @@
-from io import BytesIO, StringIO, TextIOWrapper
+from io import BytesIO,  TextIOWrapper
 from pathlib import Path
-from typing import Dict, Union, TextIO
+from typing import  Union, TextIO
 from lzma import compress, decompress
+import mimetypes
 
 import PIL.Image
 
-from core.abc.fileSystem import AbstractFileSystem, AbstractFile, openingReadMode, openingWriteMode
+from core.abc.fileSystem import AbstractFileSystem, AbstractFile, openingReadMode, openingWriteMode, AbstractFolder
+from core.exception import FileSystemError
 
 
 class File(AbstractFile):
@@ -156,6 +158,9 @@ class File(AbstractFile):
 			raise RuntimeError( 'This File object has no disk path!' )
 		self.path.touch(exist_ok=True)
 
+	def isFolder( self ) -> bool:
+		return False
+
 	def isImage( self ) -> bool:
 		"""
 		Checks if this File object is pointing to a valid image
@@ -193,9 +198,6 @@ class File(AbstractFile):
 
 	def __str__(self) -> str:
 		return f'File object. file path: { str( self.path.resolve() if isinstance( self.path, Path ) else None ) }'
-
-	def __repr__(self) -> str:
-		return '{ "path": "' + str(self.path) + '", "content": "' + str( self.content.read() ) + '" }'
 
 	def __enter__(self):
 		pass
@@ -236,23 +238,66 @@ class File(AbstractFile):
 		return File(path=path)
 
 
-class FileSystem(AbstractFileSystem):
-	sandbox: Path
-	cache: Dict[str, File] = {}
+class Folder(File, AbstractFolder):
 
-	def __init__(self, path: Union[Path, str]):
+	def isFolder( self ) -> bool:
+		return True
+
+	def walk( self ) -> AbstractFile:
+		for file in self.path.glob('*'):
+			yield File( file ) if file.is_file() else Folder( file )
+
+	def __iter__( self ):
+		pass
+
+	def __next__( self ) -> AbstractFile:
+		pass
+
+
+class FileSystem(AbstractFileSystem):
+
+	def __init__( self, path: Union[Path, str] ):
 		if not isinstance(path, Path):
 			path = Path(path)
 		self.sandbox = path
 
-	def getAsset( self, path: str ) -> File:
-		pass
+	def getAsset( self, path: Union[Path, str], layer: int = 0 ) -> AbstractFile:
+		if not isinstance(path, Path):
+			path = Path(path)
 
-	def getImage( self, path: str ) -> PIL.Image.Image:
+		if path.parts[layer] in self.cache.keys():
+			if isinstance( self.cache[ path.parts[layer] ], FileSystem):
+				return self.cache[ path.parts[layer] ].getAsset(path, layer + 1)
+		try:
+			path.relative_to(self.sandbox)
+		except:
+			raise FileSystemError(f'{str(path)} its not inside {str(self.sandbox)}')
+
+		path = path.relative_to(self.sandbox)
+
+		if '..' in path.parts:
+			raise FileSystemError( f'{str( path )} its not inside {str( self.sandbox )}' )
+
+		if path.parts.count('/') > layer:
+			folder = FileSystem( path='/'.join( path.parts[:layer + 1] ) )
+			if folder.asFile().exists():
+				self.cache[ path.parts[ layer ] ] = folder
+				return self.cache[ path.parts[layer] ].getAsset(path, layer + 1)
+			else:
+				raise FileSystemError( f'Unknown path {str( path )}' )
+		else:
+			self.cache[ path.parts[layer] ] = File(path)
+			return self.cache[ path.parts[layer] ]
+
+	def getFolder( self, path: Union[Path, str], layer: int = 0 ) -> AbstractFile:
 		pass
 
 	def create( self, path: str ) -> None:
 		pass
+
+	def asFolder( self ) -> AbstractFolder:
+		self.fileForm = Folder( self.sandbox )
+		return self.fileForm
 
 	def __iter__(self):
 		pass
