@@ -5,8 +5,10 @@ from lzma import compress, decompress
 import mimetypes
 
 import PIL.Image
+import discord
 
-from core.abc.fileSystem import AbstractFileSystem, AbstractFile, openingReadMode, openingWriteMode, AbstractFolder
+from core.abc.fileSystem import AbstractFileSystem, AbstractFile, openingReadMode, openingWriteMode, AbstractFolder, \
+	fileType
 from core.exception import FileSystemError
 
 
@@ -159,6 +161,7 @@ class File(AbstractFile):
 		self.path.touch(exist_ok=True)
 
 	def isFolder( self ) -> bool:
+		""" Returns false if this is not a folder """
 		return False
 
 	def isImage( self ) -> bool:
@@ -187,6 +190,16 @@ class File(AbstractFile):
 		else:
 			return image
 
+	def toDiscord( self, name=None, useName: str = False, spoiler: bool = False ) -> discord.File:
+		"""
+		Converts this file to a discord file
+		:param name: Optional discord file name
+		:param useName: True to use the disk's filename
+		:param spoiler: Self explanatory
+		:return: discord.File
+		"""
+		return discord.File(self.content, filename=self.path.name if useName else name, spoiler=spoiler)
+
 	def _read( self ) -> None:
 		""" private method, do not use """
 		if self.content is not None:
@@ -197,7 +210,7 @@ class File(AbstractFile):
 			self.content = BytesIO()
 
 	def __str__(self) -> str:
-		return f'File object. file path: { str( self.path.resolve() if isinstance( self.path, Path ) else None ) }'
+		return f'File object. path: { str( self.path.resolve() if isinstance( self.path, Path ) else None ) }'
 
 	def __enter__(self):
 		pass
@@ -238,20 +251,56 @@ class File(AbstractFile):
 		return File(path=path)
 
 
-class Folder(File, AbstractFolder):
+class Folder(AbstractFolder):
+
+	def __init__( self, path: Union[Path, str] ):
+		if not isinstance(path, Path):
+			path = Path(path)
+		if not path.is_dir():
+			if path.exists():
+				raise FileSystemError('The provided path is not a folder!')
+		self.path = path
+
+	def walk( self, ftype: fileType = fileType.both ) -> Union[AbstractFile, AbstractFolder]:
+		for file in self.path.glob('*'):
+			if file.is_dir():
+				if ftype is fileType.folder or fileType.both:
+					yield Folder( file )
+			elif file.is_file():
+				if ftype is fileType.file or fileType.both:
+					yield File( file )
+
+	def exists( self ) -> bool:
+		return self.path.exists()
+
+	def touch( self ) -> None:
+		self.path.mkdir()
 
 	def isFolder( self ) -> bool:
 		return True
 
-	def walk( self ) -> AbstractFile:
-		for file in self.path.glob('*'):
-			yield File( file ) if file.is_file() else Folder( file )
+	def __str__(self) -> str:
+		return f'Folder object. path: { str( self.path.resolve() if isinstance( self.path, Path ) else None ) }'
 
 	def __iter__( self ):
-		pass
+		self.__tmp_iter_array_index = 0
+		self.__tmp_iter_array = [ file for file in self.path.glob( '*' ) ]
+		return self
 
-	def __next__( self ) -> AbstractFile:
-		pass
+	def __next__( self ) -> Union[AbstractFile, AbstractFolder]:
+		if self.__tmp_iter_array_index < len( self.__tmp_iter_array ):
+			file = self.__tmp_iter_array[ self.__tmp_iter_array_index ]
+			self.__tmp_iter_array_index += 1
+			return File( file ) if file.is_file() else Folder( file )
+		del self.__tmp_iter_array_index
+		del self.__tmp_iter_array
+		raise StopIteration
+
+	def __contains__(self, item):
+		for path in self.path.glob('*'):
+			if path.name == item:
+				return True
+		return False
 
 
 class FileSystem(AbstractFileSystem):
@@ -261,7 +310,7 @@ class FileSystem(AbstractFileSystem):
 			path = Path(path)
 		self.sandbox = path
 
-	def getAsset( self, path: Union[Path, str], layer: int = 0 ) -> AbstractFile:
+	def get( self, path: Union[Path, str], ftype: fileType = fileType.file, layer: int = 0 ) -> Union[AbstractFile, AbstractFolder]:
 		if not isinstance(path, Path):
 			path = Path(path)
 
@@ -280,20 +329,32 @@ class FileSystem(AbstractFileSystem):
 
 		if path.parts.count('/') > layer:
 			folder = FileSystem( path='/'.join( path.parts[:layer + 1] ) )
-			if folder.asFile().exists():
+			if folder.asFolder().exists():
 				self.cache[ path.parts[ layer ] ] = folder
-				return self.cache[ path.parts[layer] ].getAsset(path, layer + 1)
+				return self.cache[ path.parts[layer] ].get(path, ftype, layer + 1)
 			else:
 				raise FileSystemError( f'Unknown path {str( path )}' )
 		else:
-			self.cache[ path.parts[layer] ] = File(path)
-			return self.cache[ path.parts[layer] ]
+			if ftype is fileType.folder:
+				if path.exists() and ( not path.is_dir() ):
+					raise FileSystemError('The specified path points to a file, not a folder')
+				self.cache[ path.parts[layer] ] = Folder(path)
+				return self.cache[ path.parts[layer] ]
+			else:
+				if path.exists() and ( not path.is_file() ):
+					raise FileSystemError( 'The specified path points to a folder, not a file' )
+				self.cache[ path.parts[layer] ] = File(path)
+				return self.cache[ path.parts[layer] ]
 
-	def getFolder( self, path: Union[Path, str], layer: int = 0 ) -> AbstractFile:
+	def getAsset( self, path: str, layer: int = 0 ) -> AbstractFile:
+		return self.get(path)
+
+	def getFolder( self, path: Union[Path, str], layer: int = 0 ) -> AbstractFolder:
+		return self.get(path, fileType.folder)
+
+	def create( self, path: str, folder: bool = False ) -> None:
 		pass
 
-	def create( self, path: str ) -> None:
-		pass
 
 	def asFolder( self ) -> AbstractFolder:
 		self.fileForm = Folder( self.sandbox )
@@ -306,4 +367,11 @@ class FileSystem(AbstractFileSystem):
 		pass
 
 	def __contains__(self, item):
-		pass
+		if item in self.cache.keys():
+			return True
+
+		for path in self.sandbox.glob('*'):
+			if path.name == item:
+				return True
+
+		return False

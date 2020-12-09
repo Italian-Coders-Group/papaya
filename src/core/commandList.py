@@ -1,8 +1,7 @@
-from typing import Coroutine, Dict, Callable, Awaitable
+from typing import Coroutine, Dict, Awaitable
 
 from discord import Message
 
-import core.abc.server
 from core.abc.server import AbstractServer
 
 

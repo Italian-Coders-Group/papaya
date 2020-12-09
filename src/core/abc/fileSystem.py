@@ -4,6 +4,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import Dict, Union, TextIO, Final
 
+import discord
 from PIL.Image import Image
 
 
@@ -15,6 +16,12 @@ class openingReadMode(Enum):
 class openingWriteMode(Enum):
 	writeText = 'w'
 	writeBytes = 'wb'
+
+
+class fileType(Enum):
+	folder = 'folder'
+	file = 'file'
+	both = 'both'
 
 
 class AbstractFile(metaclass=ABCMeta):
@@ -142,6 +149,7 @@ class AbstractFile(metaclass=ABCMeta):
 
 	@abstractmethod
 	def isFolder( self ) -> bool:
+		""" Returns false if this is not a folder """
 		pass
 
 	@abstractmethod
@@ -157,6 +165,17 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		Reads a PIL images from this file
 		:return: Image obj
+		"""
+		pass
+
+	@abstractmethod
+	def toDiscord( self, name: str = None, useName: bool = False, spoiler: bool = False ) -> discord.File:
+		"""
+		Converts this file to a discord file
+		:param name: Optional discord file name
+		:param useName: True to use the disk's filename
+		:param spoiler: Self explanatory
+		:return: discord.File
 		"""
 		pass
 
@@ -196,10 +215,26 @@ class AbstractFile(metaclass=ABCMeta):
 		pass
 
 
-class AbstractFolder( AbstractFile, metaclass=ABCMeta ):
+class AbstractFolder( metaclass=ABCMeta ):
+
+	path: Path = None
 
 	@abstractmethod
-	def walk( self ) -> AbstractFile:
+	def walk( self, ftype: fileType = fileType.both ) -> Union[AbstractFile, 'AbstractFolder']:
+		pass
+
+	@abstractmethod
+	def exists( self ) -> bool:
+		""" Checks if this file exist on disk """
+		pass
+
+	@abstractmethod
+	def touch( self ) -> None:
+		"""	Creates this file on disk """
+		pass
+
+	@abstractmethod
+	def isFolder( self ) -> bool:
 		pass
 
 	@abstractmethod
@@ -207,7 +242,7 @@ class AbstractFolder( AbstractFile, metaclass=ABCMeta ):
 		pass
 
 	@abstractmethod
-	def __next__(self) -> AbstractFile:
+	def __next__(self) -> Union[AbstractFile, 'AbstractFolder']:
 		pass
 
 
@@ -215,7 +250,11 @@ class AbstractFileSystem(metaclass=ABCMeta):
 
 	sandbox: Path
 	fileForm: AbstractFolder = None
-	cache: Dict[str, Union[ AbstractFile, 'AbstractFileSystem' ] ] = {}
+	cache: Dict[str, Union[ AbstractFile, AbstractFolder, 'AbstractFileSystem' ] ] = {}
+
+	@abstractmethod
+	def get( self, path: str, ftype: fileType, layer: int = 0 ) -> Union[AbstractFile, AbstractFolder]:
+		pass
 
 	@abstractmethod
 	def getAsset( self, path: str, layer: int = 0 ) -> AbstractFile:
