@@ -28,6 +28,7 @@ class AbstractFile(metaclass=ABCMeta):
 
 	content: BytesIO = None
 	path: Path = None
+	lastEdit: float = 0
 	defaultReadMode: openingReadMode = openingReadMode.readBytes
 	defaultWriteMode: openingWriteMode = openingWriteMode.writeBytes
 	_compressed: bool = False
@@ -157,6 +158,22 @@ class AbstractFile(metaclass=ABCMeta):
 		"""
 		Checks if this File object is pointing to a valid image
 		:return: True if it is, False otherwise
+		"""
+		pass
+
+	@abstractmethod
+	def isDirty( self ) -> bool:
+		"""
+		Checks if this File object content was modified and not saved
+		:return: true if it was
+		"""
+		pass
+
+	@abstractmethod
+	def isDiskDirty( self ) -> bool:
+		"""
+		Checks if this File object content was not synced with the disk
+		:return: true if the disk has a more updated copy
 		"""
 		pass
 

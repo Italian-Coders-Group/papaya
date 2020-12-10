@@ -1,5 +1,6 @@
 from io import BytesIO,  TextIOWrapper
 from pathlib import Path
+from time import time
 from typing import  Union, TextIO
 from lzma import compress, decompress
 import mimetypes
@@ -87,6 +88,7 @@ class File(AbstractFile):
 		"""
 		self._read()
 		self.content.write( data if mode is openingWriteMode.writeBytes else data.encode() )
+		self.lastEdit = time()
 
 	def writeText( self, data: str ) -> None:
 		"""
@@ -146,6 +148,7 @@ class File(AbstractFile):
 		file = File()
 		file.content = BytesIO( self.content.read() ) if isinstance( self.content, BytesIO ) else None
 		file.path = Path( self.path ) if isinstance( self.content, Path ) else None
+		file.lastEdit = self.lastEdit
 		return file
 
 	def exists( self ) -> bool:
@@ -177,6 +180,24 @@ class File(AbstractFile):
 		else:
 			return True
 
+	def isDirty( self ) -> bool:
+		"""
+		Checks if this File object content was modified and not saved
+		:return: true if it was
+		"""
+		if self.lastEdit == 0:
+			self.lastEdit = self.path.stat().st_mtime if self.path is not None else 0
+		return self.lastEdit > self.path.stat().st_mtime
+
+	def isDiskDirty( self ) -> bool:
+		"""
+		Checks if this File object content was not synced with the disk
+		:return: true if the disk has a more updated copy
+		"""
+		if self.lastEdit == 0:
+			self.lastEdit = self.path.stat().st_mtime if self.path is not None else 0
+		return self.lastEdit < self.path.stat().st_mtime
+
 	def toImage( self ) -> PIL.Image.Image:
 		"""
 		Reads a PIL images from this file
@@ -200,14 +221,17 @@ class File(AbstractFile):
 		"""
 		return discord.File(self.content, filename=self.path.name if useName else name, spoiler=spoiler)
 
-	def _read( self ) -> None:
+	def _read( self, force: bool = False ) -> None:
 		""" private method, do not use """
-		if self.content is not None:
-			return
-		if self.path is not None:
-			self.content = BytesIO( self.path.read_bytes() )
+		if self.path is None:
+			if self.content is None:
+				self.content = BytesIO()
 		else:
-			self.content = BytesIO()
+			if self.lastEdit >= self.path.stat().st_mtime:
+				if ( self.content is None ) or ( not force ):
+					return
+			self.content = BytesIO( self.path.read_bytes() )
+			self.lastEdit = self.path.stat().st_mtime
 
 	def __str__(self) -> str:
 		return f'File object. path: { str( self.path.resolve() if isinstance( self.path, Path ) else None ) }'
@@ -320,31 +344,33 @@ class FileSystem(AbstractFileSystem):
 		try:
 			path.relative_to(self.sandbox)
 		except:
-			raise FileSystemError(f'{str(path)} its not inside {str(self.sandbox)}')
+			raise FileSystemError(f'{str(path)} its not inside {str( self.sandbox )}')
 
-		path = path.relative_to(self.sandbox)
+		relPath = path.relative_to(self.sandbox)
 
 		if '..' in path.parts:
-			raise FileSystemError( f'{str( path )} its not inside {str( self.sandbox )}' )
+			raise FileSystemError( f'{str( relPath )} its not inside {str( self.sandbox )}' )
 
-		if path.parts.count('/') > layer:
-			folder = FileSystem( path='/'.join( path.parts[:layer + 1] ) )
-			if folder.asFolder().exists():
-				self.cache[ path.parts[ layer ] ] = folder
-				return self.cache[ path.parts[layer] ].get(path, ftype, layer + 1)
-			else:
-				raise FileSystemError( f'Unknown path {str( path )}' )
+		if len( path.parts ) > layer:
+			tmp = Path( '/'.join( path.parts[:layer + 1] ) )
+			if tmp.is_dir():
+				folder = FileSystem( path=tmp )
+				if folder.asFolder().exists():
+					self.cache[ path.parts[ layer ] ] = folder
+					return self.cache[ path.parts[layer] ].get(path, ftype, layer + 1)
+				else:
+					raise FileSystemError( f'Unknown path {str( path )}' )
+
+		if ftype is fileType.folder:
+			if path.exists() and ( not path.is_dir() ):
+				raise FileSystemError('The specified path points to a file, not a folder')
+			self.cache[ path.parts[layer] ] = Folder(relPath)
+			return self.cache[ path.parts[layer] ]
 		else:
-			if ftype is fileType.folder:
-				if path.exists() and ( not path.is_dir() ):
-					raise FileSystemError('The specified path points to a file, not a folder')
-				self.cache[ path.parts[layer] ] = Folder(path)
-				return self.cache[ path.parts[layer] ]
-			else:
-				if path.exists() and ( not path.is_file() ):
-					raise FileSystemError( 'The specified path points to a folder, not a file' )
-				self.cache[ path.parts[layer] ] = File(path)
-				return self.cache[ path.parts[layer] ]
+			if path.exists() and ( not path.is_file() ):
+				raise FileSystemError( 'The specified path points to a folder, not a file' )
+			self.cache[ path.parts[layer] ] = File(relPath)
+			return self.cache[ path.parts[layer] ]
 
 	def getAsset( self, path: str, layer: int = 0 ) -> AbstractFile:
 		return self.get(path)
@@ -355,16 +381,23 @@ class FileSystem(AbstractFileSystem):
 	def create( self, path: str, folder: bool = False ) -> None:
 		pass
 
-
 	def asFolder( self ) -> AbstractFolder:
 		self.fileForm = Folder( self.sandbox )
 		return self.fileForm
 
-	def __iter__(self):
-		pass
+	def __iter__( self ):
+		self.__tmp_iter_array_index = 0
+		self.__tmp_iter_array = [ file for file in self.sandbox.glob( '*' ) ]
+		return self
 
-	def __next__(self):
-		pass
+	def __next__( self ) -> Union[ AbstractFile, AbstractFolder ]:
+		if self.__tmp_iter_array_index < len( self.__tmp_iter_array ):
+			file = self.__tmp_iter_array[ self.__tmp_iter_array_index ]
+			self.__tmp_iter_array_index += 1
+			return File( file ) if file.is_file() else Folder( file )
+		del self.__tmp_iter_array_index
+		del self.__tmp_iter_array
+		raise StopIteration
 
 	def __contains__(self, item):
 		if item in self.cache.keys():
