@@ -410,3 +410,6 @@ class FileSystem(AbstractFileSystem):
 				return True
 
 		return False
+
+
+assetsFs: FileSystem = FileSystem('./assets')
