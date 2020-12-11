@@ -32,6 +32,7 @@ class File(AbstractFile):
 		"""
 		if path is not None:
 			self.path = path if isinstance(path, Path) else Path(path)
+			self.lastEdit = 0
 		elif data is not None:
 			self.content = data if isinstance(data, BytesIO) else BytesIO(data)
 		else:
@@ -333,6 +334,7 @@ class FileSystem(AbstractFileSystem):
 		if not isinstance(path, Path):
 			path = Path(path)
 		self.sandbox = path
+		self.cache = {}
 
 	def get( self, path: Union[Path, str], ftype: fileType = fileType.file, layer: int = 0 ) -> Union[AbstractFile, AbstractFolder]:
 		if not isinstance(path, Path):
@@ -364,12 +366,12 @@ class FileSystem(AbstractFileSystem):
 		if ftype is fileType.folder:
 			if path.exists() and ( not path.is_dir() ):
 				raise FileSystemError('The specified path points to a file, not a folder')
-			self.cache[ path.parts[layer] ] = Folder(relPath)
+			self.cache[ path.parts[layer] ] = Folder(path)
 			return self.cache[ path.parts[layer] ]
 		else:
 			if path.exists() and ( not path.is_file() ):
 				raise FileSystemError( 'The specified path points to a folder, not a file' )
-			self.cache[ path.parts[layer] ] = File(relPath)
+			self.cache[ path.parts[layer] ] = File(path)
 			return self.cache[ path.parts[layer] ]
 
 	def getAsset( self, path: str, layer: int = 0 ) -> AbstractFile:

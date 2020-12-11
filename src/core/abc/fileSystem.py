@@ -28,7 +28,7 @@ class AbstractFile(metaclass=ABCMeta):
 
 	content: BytesIO = None
 	path: Path = None
-	lastEdit: float = 0
+	lastEdit: float = None
 	defaultReadMode: openingReadMode = openingReadMode.readBytes
 	defaultWriteMode: openingWriteMode = openingWriteMode.writeBytes
 	_compressed: bool = False
@@ -267,7 +267,7 @@ class AbstractFileSystem(metaclass=ABCMeta):
 
 	sandbox: Path
 	fileForm: AbstractFolder = None
-	cache: Dict[str, Union[ AbstractFile, AbstractFolder, 'AbstractFileSystem' ] ] = {}
+	cache: Dict[str, Union[ AbstractFile, AbstractFolder, 'AbstractFileSystem' ] ]
 
 	@abstractmethod
 	def get( self, path: str, ftype: fileType, layer: int = 0 ) -> Union[AbstractFile, AbstractFolder]:
