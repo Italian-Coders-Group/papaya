@@ -3,7 +3,6 @@ from pathlib import Path
 from time import time
 from typing import  Union, TextIO
 from lzma import compress, decompress
-import mimetypes
 
 import PIL.Image
 import discord
@@ -11,6 +10,9 @@ import discord
 from core.abc.fileSystem import AbstractFileSystem, AbstractFile, openingReadMode, openingWriteMode, AbstractFolder, \
 	fileType
 from core.exception import FileSystemError
+
+
+__repoUrl: str = 'https://github.com/Italian-Coders-Group/papaya/raw/main/'
 
 
 class File(AbstractFile):
@@ -221,6 +223,14 @@ class File(AbstractFile):
 		:return: discord.File
 		"""
 		return discord.File(self.content, filename=self.path.name if useName else name, spoiler=spoiler)
+
+	def toGithubUrl( self ) -> str:
+		"""
+		Makes the github raw url
+		:return: file url on github
+		"""
+		global __repoUrl
+		return f'{__repoUrl}/assets/{self.path}'
 
 	def _read( self, force: bool = False ) -> None:
 		""" private method, do not use """

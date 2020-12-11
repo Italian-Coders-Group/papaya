@@ -199,6 +199,14 @@ class AbstractFile(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
+	def toGithubUrl( self ) -> str:
+		"""
+		Makes the github raw url
+		:return: file url on github
+		"""
+		pass
+
+	@abstractmethod
 	def _read( self ) -> None:
 		""" private method, do not use """
 		pass
