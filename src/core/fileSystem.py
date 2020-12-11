@@ -32,7 +32,7 @@ class File(AbstractFile):
 		"""
 		if path is not None:
 			self.path = path if isinstance(path, Path) else Path(path)
-			self.lastEdit = 0
+			self.lastEdit = float( self.path.stat().st_mtime )
 		elif data is not None:
 			self.content = data if isinstance(data, BytesIO) else BytesIO(data)
 		else:
@@ -161,7 +161,7 @@ class File(AbstractFile):
 	def touch( self ) -> None:
 		"""	Creates this file on disk """
 		if self.path is None:
-			raise RuntimeError( 'This File object has no disk path!' )
+			raise FileSystemError( 'This File object has no disk path!' )
 		self.path.touch(exist_ok=True)
 
 	def isFolder( self ) -> bool:
@@ -183,11 +183,11 @@ class File(AbstractFile):
 
 	def isDirty( self ) -> bool:
 		"""
-		Checks if this File object content was modified and not saved
+		Checks if this File object content was modified and not saved to disk
 		:return: true if it was
 		"""
-		if self.lastEdit == 0:
-			self.lastEdit = self.path.stat().st_mtime if self.path is not None else 0
+		if self.lastEdit is None:
+			raise FileSystemError( 'This File object has no disk path!' )
 		return self.lastEdit > self.path.stat().st_mtime
 
 	def isDiskDirty( self ) -> bool:
@@ -195,8 +195,8 @@ class File(AbstractFile):
 		Checks if this File object content was not synced with the disk
 		:return: true if the disk has a more updated copy
 		"""
-		if self.lastEdit == 0:
-			self.lastEdit = self.path.stat().st_mtime if self.path is not None else 0
+		if self.lastEdit is None:
+			raise FileSystemError( 'This File object has no disk path!' )
 		return self.lastEdit < self.path.stat().st_mtime
 
 	def toImage( self ) -> PIL.Image.Image:

@@ -165,6 +165,7 @@ class AbstractFile(metaclass=ABCMeta):
 	def isDirty( self ) -> bool:
 		"""
 		Checks if this File object content was modified and not saved
+		TODO: Currently this doesn't work, for some reason
 		:return: true if it was
 		"""
 		pass
@@ -173,6 +174,7 @@ class AbstractFile(metaclass=ABCMeta):
 	def isDiskDirty( self ) -> bool:
 		"""
 		Checks if this File object content was not synced with the disk
+		TODO: Currently this doesn't work, for some reason
 		:return: true if the disk has a more updated copy
 		"""
 		pass
