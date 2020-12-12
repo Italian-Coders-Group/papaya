@@ -26,6 +26,7 @@ class Database:
 		return {}
 
 
+
 def loadGuild(identifier: int) -> dict:
 	return __instance.loadGuild()
 

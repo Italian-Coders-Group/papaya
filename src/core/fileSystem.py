@@ -1,7 +1,7 @@
 from io import BytesIO,  TextIOWrapper
 from pathlib import Path
 from time import time
-from typing import  Union, TextIO
+from typing import Union, TextIO
 from lzma import compress, decompress
 
 import PIL.Image
@@ -49,7 +49,7 @@ class File(AbstractFile):
 		return self.content.read()
 
 	def fromBytes( self, data: bytes, resetPath: bool = True ) -> None:
-		"""
+		"""s
 		Replace the content of this File obj with the given bytes.
 		if resetPath is True (default) removes the path for this obj
 		:param data: bytes to write
