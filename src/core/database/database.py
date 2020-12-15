@@ -12,10 +12,8 @@ class Database(AbstractDatabase):
 	def getGuild( self, guild: int ) -> Guild:
 		return Guild( self.backend.getGuild(guild) )
 
-
-	def updateGameToGuild( self, game: Game ) -> None:
+	def updateGame( self, game: Game ) -> None:
 		pass
-
 
 	def __del__(self):
 		self.backend.save()
