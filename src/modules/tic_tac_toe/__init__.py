@@ -17,9 +17,12 @@ async def playttt(server: AbstractServer, msg: Message):
     newGame = Game(msg.author, msg.mentions[0])
     await msg.channel.send(embed=embed("New Game", f"This game is between { await newGame.player1.getUser()} and "
                                              f"{await newGame.player2.getUser()}", getColor("255,0,0")))
+    '''
+    This is temporary, only for testing purposes.
+    '''
     if server.guild.id not in d.keys():
         d[server.guild.id] = []
-    d[server.guild.id].append(newGame)
+    d[server.guild.id].appsend(newGame)
 
     print(d)
 
@@ -43,3 +46,9 @@ async def testbase(server: AbstractServer, msg: Message):
 async def grid(server: AbstractServer, msg: Message):
     games = [["x", "o", "x"], ["x", "x", "o"], ["o", "o", "x"]]
     has_won = True if check_for_win(games, "o") else False
+    print(has_won )
+
+
+@Command
+async def get_state(server: AbstractServer, msg: Message):
+    await msg.channel.send(d.get(server.guild.id)[0].get_vs())

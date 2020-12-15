@@ -7,6 +7,7 @@ import os
 from PIL import Image
 from .Grid import Grid
 from core import utils
+# from core.database import get_game_id
 
 
 def check_for_win(grid, sign):
