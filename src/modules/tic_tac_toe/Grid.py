@@ -1,4 +1,4 @@
-from core.GridSystem import BaseGrid
+from core.gridsystem.UnorderedGrid import BaseGrid
 
 
 class Grid(BaseGrid):
