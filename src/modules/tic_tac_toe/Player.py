@@ -1,10 +1,11 @@
 import os
 from games.abc.basePlayer import BasePlayer
+from PIL import Image
 
 
 class Player(BasePlayer):
 
-    def __init__(self, user, symbol):
+    def __init__(self, user, symbol: Image, sign: str):
         """
         Sarebbe utile storare nel db un Player_ID con un Guild_ID così da poter sperimentare con ledearboards o altro.
 
@@ -17,7 +18,8 @@ class Player(BasePlayer):
         """
 
         self.user = user.id
-        # sybol can be either X or O
+        self.sign = sign
 
         self.symbol = symbol
+        print(f"{user} has symbol {type(symbol)}")
 
