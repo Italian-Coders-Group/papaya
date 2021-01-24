@@ -13,6 +13,7 @@ class UnorderedGrid(AbstractGrid):
 		self._size = size
 		self._default = default
 		self._table = {}
+		self.clear()
 
 	def getCell( self, x: int, y: int ) -> AbstractCell:
 		self._check(x, y)
@@ -26,7 +27,9 @@ class UnorderedGrid(AbstractGrid):
 		self._table[f'{x},{y}'] = value
 
 	def clear( self ) -> None:
-		pass
+		for x in range( self._size[ 0 ] ):
+			for y in range( self._size[ 1 ] ):
+				self._table[ f'{x},{y}' ] = self._default
 
 	def serialize( self ) -> str:
 		pass

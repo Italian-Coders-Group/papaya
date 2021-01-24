@@ -23,12 +23,13 @@ class Cell(AbstractCell):
 class OrderedGrid(AbstractGrid):
 
 	_cells: List[Cell]
+	_default: CellData = None
 
-	def __init__(self, size: Tuple[int, int], initialize: bool = True):
+	def __init__(self, size: Tuple[int, int], default: CellData = None):
 		self._cells = []
 		self._size = size
-		if initialize:
-			self.clear()
+		self._default = default
+		self.clear()
 
 	def getCell( self, x: int, y: int ) -> CellData:
 		self._check(x, y)
@@ -46,7 +47,7 @@ class OrderedGrid(AbstractGrid):
 		self._cells.clear()
 		for x in range(self._size[0]):
 			for y in range(self._size[1]):
-				self._cells.append( Cell(x, y, None ) )
+				self._cells.append( Cell(x, y, self._default ) )
 
 	def serialize( self ) -> str:
 		pass
