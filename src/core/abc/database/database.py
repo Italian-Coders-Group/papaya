@@ -45,3 +45,6 @@ class AbstractDatabase(metaclass=ABCMeta):
 	@abstractmethod
 	def updateGameToGuild( self, game: Game ) -> None:
 		pass
+
+	def __del__(self):
+		self.backend.save()

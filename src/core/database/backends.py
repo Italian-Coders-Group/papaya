@@ -14,20 +14,15 @@ class JsonBackend( AbstractBackend ):
 	data: Dict[ GuildId, Dict[ str, Union[ Games, Members ] ] ]
 
 	def __init__(self, path: str = None):
+		super(JsonBackend, self).__init__(path)
 		self.data = {}
-		if path is not None:
-			self.path = path
 
-	def save( self, path: str = None ) -> None:
-		if path is None:
-			path = self.path
-		with open( path, 'w' ) as file:
+	def save( self ) -> None:
+		with open( self.path, 'w' ) as file:
 			json.dump( self.data, file, indent=4 )
 
-	def load( self, path: str = None ) -> None:
-		if path is None:
-			path = self.path
-		with open(path, 'r') as file:
+	def load( self ) -> None:
+		with open(self.path, 'r') as file:
 			self.data = json.load( file )
 
 	def getGuild( self, uuid: int ) -> dict:
@@ -37,10 +32,11 @@ class JsonBackend( AbstractBackend ):
 # TODO: implement sql backend
 class SqlBackend(AbstractBackend):
 
-	def __init__(self):
+	def __init__( self, path: str = None ):
+		super(SqlBackend, self).__init__( path )
 		raise NotImplementedError
 
-	def save( self, path: str = None ) -> None:
+	def save( self ) -> None:
 		raise NotImplementedError
 
 	def load( self, path: str = None ) -> None:
