@@ -29,6 +29,20 @@ def check_for_win(grid, sign):
             (grid[0][2] == sign and grid[1][1] == sign and grid[2][0] == sign))
 
 
+def get_coords(inputValue: str):
+
+    possible_coords = {
+        "tl": (0, 0)
+
+    }
+
+    for key in possible_coords.keys():
+        if inputValue == key:
+            outputValue = possible_coords[key]
+
+    return outputValue
+
+
 class Game(BaseGame):
 
     def __init__(self, player1: discord.Member, player2: discord.Member):
@@ -100,16 +114,3 @@ class Game(BaseGame):
     potrà usare, così non dobbiamo usare metodi diversi se sta giocando la IA o un altro player
     
     """
-
-    def base(self):
-        """
-        Questo metodo prende una base.png e la salva nel buffer. La base devo decidere quanto sarà grande.
-
-        Per semplicità dei tools userò Aseprite come editor, perché ci si lavora bene con i pixel e il software è
-        intuitivo AF.
-
-        :return:
-        """
-        image = Image.open(f"{os.getcwd()}\\modusigns\\tic_tac_toe\\src\\test_base.png")
-        image.save(self.buffer, "PNG")
-        return self.buffer.seek(0)
