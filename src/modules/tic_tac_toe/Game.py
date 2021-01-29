@@ -32,15 +32,39 @@ def check_for_win(grid, sign):
 def get_coords(inputValue: str):
 
     possible_coords = {
-        "tl": (0, 0)
-
+        "tl": (0, 0),
+        "11": (0, 0),
+        "topleft": (0, 0),
+        "t": (0, 1),
+        "top": (0, 1),
+        "12": (0, 1),
+        "tr": (0, 2),
+        "topright": (0, 2),
+        "13": (0, 2),
+        "ml": (1, 0),
+        "middleleft": (1, 0),
+        "midleft": (1, 0),
+        "21": (1, 0),
+        "mid": (1, 1),
+        "middle": (1, 1),
+        "22": (1, 1),
+        "mr": (1, 2),
+        "middleright": (1, 2),
+        "midright": (1, 2),
+        "bl": (2, 0),
+        "bottomleft": (2, 0),
+        "31": (2, 0),
+        "bottom": (2, 1),
+        "b": (2, 1),
+        "32": (2, 1),
+        "br": (2, 2),
+        "bottomright": (2, 2),
+        "33": (2, 2)
     }
 
     for key in possible_coords.keys():
         if inputValue == key:
-            outputValue = possible_coords[key]
-
-    return outputValue
+            return possible_coords[key]
 
 
 class Game(BaseGame):
@@ -76,10 +100,6 @@ class Game(BaseGame):
         o = self.player2.symbol
         spacer = 53
 
-        thisgrid = [["x", "x", "o"],
-                    ["x", "o", "o"],
-                    ["o", "x", "x"]]
-
         for i, row in enumerate(self.grid.grid):
             for j, cell in enumerate(row):
 
@@ -96,9 +116,14 @@ class Game(BaseGame):
         self.buffer.seek(0)
         return self.buffer
 
-    def makeMove(self, posX=0, posY=0):
-
+    def makeMove(self, pos):
+        posX, posY = get_coords(pos)
         self.grid.grid[posY][posX] = self.turn.sign
+        hasWon = check_for_win(self.grid.grid, self.turn.sign)
+        if not hasWon:
+            self.turn = self.processTurn()
+        else:
+            return f"Congrats {self.turn.user} you won!"
         return self.compile_image()
 
     def processTurn(self):

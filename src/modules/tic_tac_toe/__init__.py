@@ -34,12 +34,12 @@ async def draw(server: AbstractServer, msg: Message):
     else:
         game = d[server.guild.id][0]
 
-        if game.turn.id is not msg.author.id:
+        if game.turn.user is not msg.author.id:
             await msg.channel.send("Ehi bud it's not your turn yet")
         else:
             params = msg.content.split()
-            pos = list(params[1])
-            newState = game.makeMove(int(pos[0]), int(pos[1]))
+            pos = params[1]
+            newState = game.makeMove(pos)
             await msg.channel.send(file=File(newState, "game.png"))
 
 
