@@ -4,6 +4,8 @@ import importlib
 from discord import Client, Message
 
 from . import server
+from .database.database import Database
+from . import utils
 from .logging import get_logger
 import modules
 
@@ -14,6 +16,7 @@ class Bot:
 	instance: 'Bot'
 	client: Client
 	servers: Dict[ int, server.Server ] = {}
+	database: Database
 
 	def __init__( self ):
 		Bot.instance = self
@@ -37,6 +40,8 @@ class Bot:
 		Called when a message arrives
 		:param msg: the discord.Message obj
 		"""
+		from discord import TextChannel
+		msg.channel: TextChannel
 		# add the guild to the tracked server if it doesn't exist
 		if msg.guild.id not in self.servers.keys():
 			if msg.guild in self.client.guilds:
@@ -50,17 +55,20 @@ class Bot:
 			if 'echo' not in msg.content.split(' ')[0]:
 				return
 		# reloads the server instances and modules
-		if msg.content == '$$reload':
+		if msg.content == '$$reload' and msg.author.id in utils.getAuthors()():
 			await msg.channel.send('Reloading!')
 			self.servers.clear()
 			import core.commandList
-			import core.utils
 			import modules
-			importlib.reload( server )
-			importlib.reload( core.utils )
-			importlib.reload( core.commandList )
-			modules.reloadGames()
-			await msg.channel.send('Reloaded!')
+			try:
+				importlib.reload( server )
+				importlib.reload( utils )
+				importlib.reload( core.commandList )
+				modules.reloadGames()
+			except Exception as e:
+				await msg.channel.send( embed=utils.getTracebackEmbed(e) )
+			else:
+				await msg.channel.send('Reloaded!')
 		else:
 			# call the right handler for the server
 			await self.servers[ msg.guild.id ].handleMsg( msg )

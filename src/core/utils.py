@@ -1,9 +1,16 @@
 import traceback
-from typing import Any, Dict, List, Union, KeysView, ItemsView
+from typing import Any, List, Union, KeysView, ItemsView, Tuple, Callable
 import math
 
 import discord
 from discord import Embed, Color
+
+
+def getAuthors() -> Callable[[], Tuple[int, int]]:
+	def authors() -> Tuple[int, int]:
+		# ENDER, MR
+		return 350938367405457408, 326436392940863499
+	return authors
 
 
 def embed(title: str, content: str, color: Color) -> Embed:
