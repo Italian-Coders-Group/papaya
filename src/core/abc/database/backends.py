@@ -13,9 +13,5 @@ class AbstractBackend( metaclass=ABCMeta ):
 		pass
 
 	@abstractmethod
-	def load( self ) -> None:
-		pass
-
-	@abstractmethod
-	def getGuild( self, uuid: int ) -> dict:
+	def makeRequest( self, sqlCode: str ) -> Any:
 		pass
