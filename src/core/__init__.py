@@ -4,7 +4,7 @@ import importlib
 from discord import Client, Message
 
 from . import server
-from .database.database import Database
+# from .database.database import Database
 from . import utils
 from .logging import get_logger
 import modules
@@ -16,7 +16,7 @@ class Bot:
 	instance: 'Bot'
 	client: Client
 	servers: Dict[ int, server.Server ] = {}
-	database: Database
+	# database: Database
 
 	def __init__( self ):
 		Bot.instance = self

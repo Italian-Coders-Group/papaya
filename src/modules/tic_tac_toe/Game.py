@@ -117,14 +117,21 @@ class Game(BaseGame):
         return self.buffer
 
     def makeMove(self, pos):
+        old_board = self.compile_image()
         posX, posY = get_coords(pos)
-        self.grid.grid[posY][posX] = self.turn.sign
+        if self.grid.grid[posY][posX] == "":
+            self.grid.grid[posY][posX] = self.turn.sign
+        else:
+            return old_board, 3
         hasWon = check_for_win(self.grid.grid, self.turn.sign)
+        new_board = self.compile_image()
         if not hasWon:
             self.turn = self.processTurn()
+            code = 0
         else:
-            return f"Congrats {self.turn.user} you won!"
-        return self.compile_image()
+            code = 1
+
+        return new_board, code
 
     def processTurn(self):
         return next(self.players)
