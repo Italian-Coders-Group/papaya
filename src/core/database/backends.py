@@ -1,5 +1,6 @@
 import json
-from typing import Dict, Union, List
+import sqlite3 as sql
+from typing import Dict, Union, List, Any
 
 from core.abc.database.backends import AbstractBackend
 
@@ -28,19 +29,22 @@ class JsonBackend( AbstractBackend ):
 	def getGuild( self, uuid: int ) -> dict:
 		return self.data[ str( uuid ) ]
 
+	def makeRequest( self, sqlCode: str, *args: List[Any] ) -> Any:
+		pass
+
 
 # TODO: implement sql backend
 class SqlBackend(AbstractBackend):
 
+	dinstance: sql.Connection
+	cursor: sql.Cursor
+
 	def __init__( self, path: str = None ):
 		super(SqlBackend, self).__init__( path )
-		raise NotImplementedError
 
 	def save( self ) -> None:
-		raise NotImplementedError
+		self.dinstance.commit()
 
-	def load( self, path: str = None ) -> None:
-		raise NotImplementedError
-
-	def getGuild( self, uuid: int ) -> dict:
-		raise NotImplementedError
+	def makeRequest( self, sqlCode: str, *args: List[Any] ) -> Any:
+		self.cursor.execute( sqlCode, args )
+		return self.cursor.fetchall()

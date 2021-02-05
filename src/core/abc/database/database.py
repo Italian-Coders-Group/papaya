@@ -12,5 +12,9 @@ class AbstractDatabase(metaclass=ABCMeta):
 	def getGuild( self, guild: int ) -> 'AbstractGuild':
 		pass
 
+	@abstractmethod
+	def makeRequest( self, sql: str, *args: List[Any] ):
+		pass
+
 	def __del__(self):
 		self.backend.save()

@@ -6,6 +6,8 @@ import discord
 
 import logging
 
+from . import Database
+from .abc.database.guild import AbstractGuild
 from .abc.server import AbstractServer
 from .logging import get_logger
 import core.commandList
@@ -27,6 +29,9 @@ class Server( AbstractServer ):
 		self.guild = guild
 		self.logger = get_logger( guild.name )
 		self.commands = core.commandList.instance
+		self.secondaryPrefix = secondaryPrefix = {
+			350938367405457408: '$$'
+		}
 
 	async def handleMsg( self, msg: Message ):
 		"""
@@ -34,12 +39,21 @@ class Server( AbstractServer ):
 		:param msg: message to handle
 		"""
 		# setup
-		if not msg.content.startswith( self.prefix ):
-			return
-		msg.content = msg.content.replace( self.prefix, '', 1 )
+		prefix = self.prefix
+		if not msg.content.startswith( prefix ):
+			if msg.author.id not in self.secondaryPrefix.keys():
+				return
+			prefix = self.secondaryPrefix[msg.author.id]
+			if not msg.content.startswith( prefix ):
+				return
+		msg.content = msg.content[ len(prefix): ]
+		del prefix
 		cmd = msg.content.split( " " )
 		self.logger.info(
-			f'guild: {self.guild.name}, command: {cmd[ 0 ].lower()}, parameters: {cmd[ 1::len( cmd ) - 1 ] if len( cmd ) > 1 else None}, issuer: {msg.author.name} '
+			f'guild: {self.guild.name}, '
+			f'command: {cmd[ 0 ].lower()}, '
+			f'parameters: {"".join(cmd).replace(cmd[0], "", 1) if len( cmd ) > 1 else None}, '
+			f'issuer: {msg.author.name}'
 		)
 		# get function/coroutine
 		coro: Union[Coroutine, Callable] = self.commands.getOrDefault( cmd[ 0 ].lower(), DefCommand )
@@ -60,3 +74,10 @@ class Server( AbstractServer ):
 		:return: bool, true if the user has the permission, false otherwise
 		"""
 		return True
+
+	def GetDatabase( self ) -> AbstractGuild:
+		"""
+		Getter for this guild's database interface
+		:return: Database object
+		"""
+		return Database.instance.getGuild( self.guild.id )

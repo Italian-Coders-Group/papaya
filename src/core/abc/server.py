@@ -3,12 +3,15 @@ from typing import Dict
 
 import discord
 
+from core.abc.database.guild import AbstractGuild
+
 
 class AbstractServer(metaclass=ABCMeta):
 
 	guild: discord.Guild
 	prefix: str = '!!'
 	roleRules: Dict[ str, object ]
+	secondaryPrefix: Dict[int, str]
 
 	@abstractmethod
 	async def handleMsg( self, msg: discord.Message ):
@@ -25,5 +28,13 @@ class AbstractServer(metaclass=ABCMeta):
 		:param user: the user to check
 		:param permission: the permission to check for
 		:return: bool, true if the user has the permission, false otherwise
+		"""
+		pass
+
+	@abstractmethod
+	def GetDatabase( self ) -> AbstractGuild:
+		"""
+		Getter for this guild's database interface
+		:return: Database object
 		"""
 		pass

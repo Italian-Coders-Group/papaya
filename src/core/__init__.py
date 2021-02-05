@@ -3,8 +3,8 @@ import importlib
 
 from discord import Client, Message
 
+from .database.database import Database
 from . import server
-# from .database.database import Database
 from . import utils
 from .logging import get_logger
 import modules
@@ -16,7 +16,7 @@ class Bot:
 	instance: 'Bot'
 	client: Client
 	servers: Dict[ int, server.Server ] = {}
-	# database: Database
+	database: Database
 
 	def __init__( self ):
 		Bot.instance = self
@@ -24,6 +24,7 @@ class Bot:
 		# register event listeners
 		self.client.event( self.on_ready )
 		self.client.event( self.on_message )
+		self.database = Database()
 		modules.initializeGames()
 
 	def run( self, token: str ):
@@ -41,7 +42,9 @@ class Bot:
 		:param msg: the discord.Message obj
 		"""
 		from discord import TextChannel
+		from discord import Guild
 		msg.channel: TextChannel
+		msg.guild: Guild
 		# add the guild to the tracked server if it doesn't exist
 		if msg.guild.id not in self.servers.keys():
 			if msg.guild in self.client.guilds:
@@ -50,12 +53,14 @@ class Bot:
 			else:
 				logger.warning( f'Got message form unknown guild {msg.guild.name}, ignoring.' )
 				return
-		# don't permit to use echo to get elevation
+		# don't permit to use echo to get permission elevation
 		if msg.author == self.client.user:
 			if 'echo' not in msg.content.split(' ')[0]:
 				return
 		# reloads the server instances and modules
 		if msg.content == '$$reload' and msg.author.id in utils.getAuthors()():
+			logger.warning(f'[RELOAD] reload issued in {msg.guild.name} by {msg.author.name}!')
+			logger.info('[RELOAD] reloading!')
 			await msg.channel.send('Reloading!')
 			self.servers.clear()
 			import core.commandList
@@ -66,8 +71,10 @@ class Bot:
 				importlib.reload( core.commandList )
 				modules.reloadGames()
 			except Exception as e:
+				logger.error(f"[RELOAD] uncaught exception caught, can't complete reload!", exc_info=e)
 				await msg.channel.send( embed=utils.getTracebackEmbed(e) )
 			else:
+				logger.info('[RELOAD] reload complete!')
 				await msg.channel.send('Reloaded!')
 		else:
 			# call the right handler for the server
