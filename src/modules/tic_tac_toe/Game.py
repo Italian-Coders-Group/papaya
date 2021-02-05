@@ -1,5 +1,6 @@
 import discord
 from .Player import Player
+from .AI import AI
 from itertools import cycle
 from games.abc.baseGame import BaseGame
 import io
@@ -69,7 +70,7 @@ def get_coords(inputValue: str):
 
 class Game(BaseGame):
 
-    def __init__(self, player1: discord.Member, player2: discord.Member):
+    def __init__(self, player1: discord.Member, player2: discord.Member = None):
         """
         A ogni game verrà associato un ID automatico, ma forse questo è meglio farlo in BaseGame (non ne ho idea)
 
@@ -79,7 +80,8 @@ class Game(BaseGame):
         """
         self.buffer = io.BytesIO()
         self.player1 = Player(player1, Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\x.png"), "x")
-        self.player2 = Player(player2, Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
+        self.player2 = Player(player2, Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"),
+                              "o") if player2 is not None else AI(Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
         self.players = cycle([self.player1, self.player2])
         self.turn = self.processTurn()
         self.grid = Grid(3, 3)
