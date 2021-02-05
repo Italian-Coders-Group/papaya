@@ -29,7 +29,7 @@ class JsonBackend( AbstractBackend ):
 	def getGuild( self, uuid: int ) -> dict:
 		return self.data[ str( uuid ) ]
 
-	def makeRequest( self, sqlCode: str ) -> Any:
+	def makeRequest( self, sqlCode: str, *args: List[Any] ) -> Any:
 		pass
 
 
@@ -45,6 +45,6 @@ class SqlBackend(AbstractBackend):
 	def save( self ) -> None:
 		self.dinstance.commit()
 
-	def makeRequest( self, sqlCode: str ) -> Any:
-		self.cursor.execute(sqlCode)
+	def makeRequest( self, sqlCode: str, *args: List[Any] ) -> Any:
+		self.cursor.execute( sqlCode, args )
 		return self.cursor.fetchall()
