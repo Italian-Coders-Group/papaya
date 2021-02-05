@@ -24,3 +24,11 @@ class AbstractGuild(metaclass=ABCMeta):
 	@abstractmethod
 	def getMember( self, userId: int ) -> PapUser:
 		pass
+
+	@abstractmethod
+	def hasGame( self, gameId: str ):
+		pass
+
+	@abstractmethod
+	def hasUser( self, userId: int ):
+		pass
