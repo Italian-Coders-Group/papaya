@@ -20,6 +20,6 @@ class Database(AbstractDatabase):
 			self._cache[guild] = Guild(guild, self)
 		return self._cache.get(guild)
 
-	def makeRequest( self, sql: str, *args: List[Any] ):
+	def makeRequest( self, sql: str, *args ):
 		self.backend.makeRequest(sql, *args)
 
