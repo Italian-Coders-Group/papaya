@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict
 
 from core.abc.database.database import AbstractDatabase
 from core.dataclass import PapGame, PapUser

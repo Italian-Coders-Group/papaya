@@ -13,7 +13,7 @@ class AbstractDatabase(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def makeRequest( self, sql: str ):
+	def makeRequest( self, sql: str, *args: List[Any] ):
 		pass
 
 	def __del__(self):

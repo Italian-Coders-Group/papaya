@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABCMeta
-from typing import Any
+from typing import Any, List
 
 
 class AbstractBackend( metaclass=ABCMeta ):
@@ -13,5 +13,5 @@ class AbstractBackend( metaclass=ABCMeta ):
 		pass
 
 	@abstractmethod
-	def makeRequest( self, sqlCode: str ) -> Any:
+	def makeRequest( self, sqlCode: str, *args: List[Any] ) -> Any:
 		pass
