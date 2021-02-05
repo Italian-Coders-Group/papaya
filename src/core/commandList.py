@@ -1,8 +1,11 @@
-from typing import Coroutine, Dict, Awaitable
+from typing import Coroutine, Dict, Awaitable, List
 
 from discord import Message
 
 from core.abc.server import AbstractServer
+
+
+insult = ['scemo', 'stupido', 'idiota', 'stronzo', 'stupid', 'idiot']
 
 
 class CommandList:
@@ -10,10 +13,28 @@ class CommandList:
 	__Commands: Dict[str, Coroutine] = {}
 
 	async def echo( self, server: AbstractServer, msg: Message ):
-		await msg.channel.send( msg.content.replace('echo', '', 1) )
+		echoed: str = msg.content.replace('echo', '', 1)
+		txt = echoed.split(' ')
+		if echoed == '':
+			echoed = 'missing text!'
+		elif ( "i'm" in txt ) and _isInsult(txt):
+			echoed = 'i know'
+		elif ( "sono" in echoed ) and _isInsult(txt):
+			echoed = "lo so"
+		await msg.channel.send( echoed )
 
 	async def hello( self, server: AbstractServer, msg: Message ):
 		await msg.channel.send( 'hello there!' )
+
+	async def pprefix( self, server: AbstractServer, msg: Message ):
+		prefix: str = msg.content[8:].strip()
+		if len( prefix ) > 4:
+			await msg.channel.send(f'prefix too long! maximum lenght is 4.')
+		elif len( prefix ) == 0:
+			await msg.channel.send( f'prefix too short! minimum lenght is 1.' )
+		else:
+			server.secondaryPrefix[msg.author.id] = prefix
+			await msg.channel.send(f'personal prefix changed to "{prefix}"')
 
 	# INSTANCE METHODS: NOT COMMANDS
 
@@ -59,3 +80,9 @@ def getOrDefault( item: str, default: Coroutine[ Awaitable[ int ], AbstractServe
 	:return: the command or the default coroutine
 	"""
 	return instance.getOrDefault(item, default)
+
+def _isInsult(txt: List[str]) -> bool:
+	for i in txt:
+		if i in insult:
+			return True
+	return False
