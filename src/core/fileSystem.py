@@ -49,7 +49,7 @@ class File(AbstractFile):
 		return self.content.read()
 
 	def fromBytes( self, data: bytes, resetPath: bool = True ) -> None:
-		"""s
+		"""
 		Replace the content of this File obj with the given bytes.
 		if resetPath is True (default) removes the path for this obj
 		:param data: bytes to write
@@ -186,6 +186,7 @@ class File(AbstractFile):
 	def isDirty( self ) -> bool:
 		"""
 		Checks if this File object content was modified and not saved to disk
+		:raises FileSystemError: if this file doesn't have a disk path
 		:return: true if it was
 		"""
 		if self.lastEdit is None:
@@ -210,7 +211,7 @@ class File(AbstractFile):
 		try:
 			image = PIL.Image.open( fp=self.getBytesIO() )
 		except:
-			raise RuntimeError('The content is not an image!')
+			raise RuntimeError('The content is not an image! did you check using isImage?')
 		else:
 			return image
 
@@ -230,7 +231,7 @@ class File(AbstractFile):
 		:return: file url on github
 		"""
 		global __repoUrl
-		return f'{__repoUrl}/assets/{self.path}'
+		return f'{__repoUrl}/resources/{self.path}'
 
 	def _read( self, force: bool = False ) -> None:
 		""" private method, do not use """

@@ -6,10 +6,12 @@ from core.abc.gridsystem.AbstractGrid import AbstractGrid
 
 
 class CellData(metaclass=ABCMeta):
+	""" a base cell, please subclass to save data in a cell """
 	pass
 
 
 class Cell(AbstractCell):
+	""" Container object for CellData objects and cell position """
 	x: int
 	y: int
 	cellData: CellData
@@ -32,27 +34,42 @@ class OrderedGrid(AbstractGrid):
 		self.clear()
 
 	def getCell( self, x: int, y: int ) -> CellData:
+		"""
+		Gets the cell at X, Y
+		:param x: x pos
+		:param y: y pos
+		:return: that cell's CellData object with its data
+		"""
 		self._check(x, y)
 		for i in range( self._cells.__len__() ):
 			if self._cells[ i ].x == x and self._cells[ i ].y == y:
 				return self._cells[ i ].cellData
 
 	def setCell( self, x: int, y: int, value: CellData ) -> None:
+		"""
+		Sets the cell at X, Y
+		:param value: a CellData object with data
+		:param x: x pos
+		:param y: y pos
+		"""
 		self._check(x, y)
 		for i in range( self._cells.__len__() ):
 			if self._cells[i].x == x and self._cells[i].y == y:
 				self._cells[i].cellData = value
 
 	def clear( self ) -> None:
+		""" Clear the grid """
 		self._cells.clear()
 		for x in range(self._size[0]):
 			for y in range(self._size[1]):
 				self._cells.append( Cell(x, y, self._default ) )
 
 	def serialize( self ) -> str:
+		""" Serialize this grid to a json string """
 		pass
 
 	def deserialize( self ) -> 'OrderedGrid':
+		""" Deserialize a json string into a grid """
 		pass
 
 	def __getitem__( self, k: str ) -> CellData:

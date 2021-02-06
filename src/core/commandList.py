@@ -13,6 +13,7 @@ class CommandList:
 	__Commands: Dict[str, Coroutine] = {}
 
 	async def echo( self, server: AbstractServer, msg: Message ):
+		""" sends the same message it received """
 		echoed: str = msg.content.replace('echo', '', 1)
 		txt = echoed.split(' ')
 		if echoed == '':
@@ -24,9 +25,11 @@ class CommandList:
 		await msg.channel.send( echoed )
 
 	async def hello( self, server: AbstractServer, msg: Message ):
+		""" say hello to the author """
 		await msg.channel.send( 'hello there!' )
 
 	async def pprefix( self, server: AbstractServer, msg: Message ):
+		""" changes the personal prefix """
 		prefix: str = msg.content[8:].strip()
 		if len( prefix ) > 4:
 			await msg.channel.send(f'prefix too long! maximum lenght is 4.')

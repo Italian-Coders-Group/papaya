@@ -28,7 +28,7 @@ class Bot:
 		modules.initializeGames()
 
 	def run( self, token: str ):
-		""" Run the bot, its blocking """
+		""" Run the bot, its a blocking call """
 		self.client.run(token)
 
 	async def on_ready( self ):
@@ -62,7 +62,9 @@ class Bot:
 			logger.warning(f'[RELOAD] reload issued in {msg.guild.name} by {msg.author.name}!')
 			logger.info('[RELOAD] reloading!')
 			await msg.channel.send('Reloading!')
+			# clear all servers
 			self.servers.clear()
+			# reload modules
 			import core.commandList
 			import modules
 			try:

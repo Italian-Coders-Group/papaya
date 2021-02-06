@@ -16,6 +16,12 @@ class UnorderedGrid(AbstractGrid):
 		self.clear()
 
 	def getCell( self, x: int, y: int ) -> AbstractCell:
+		"""
+		Gets a cell at X, Y
+		:param x: x pos
+		:param y: y pos
+		:return: that cell
+		"""
 		self._check(x, y)
 		if f'{x},{y}' in self._table.keys():
 			return self._table[f'{x},{y}']
@@ -23,18 +29,26 @@ class UnorderedGrid(AbstractGrid):
 			return self._default
 
 	def setCell( self, x: int, y: int, value: AbstractCell ) -> None:
+		"""
+		Sets the cell at X, Y
+		:param x: x pos
+		:param y: y pos
+		"""
 		self._check(x, y)
 		self._table[f'{x},{y}'] = value
 
 	def clear( self ) -> None:
+		""" Clear the grid """
 		for x in range( self._size[ 0 ] ):
 			for y in range( self._size[ 1 ] ):
 				self._table[ f'{x},{y}' ] = self._default
 
 	def serialize( self ) -> str:
+		""" Serialize this grid to a json string """
 		pass
 
 	def deserialize( self ) -> 'UnorderedGrid':
+		""" Deserialize a json string into a grid """
 		pass
 
 	def __getitem__( self, k: str ) -> AbstractCell:
