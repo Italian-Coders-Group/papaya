@@ -1,5 +1,6 @@
 from typing import Dict, Any
 
+from core.abc.database.backends import AbstractBackend
 from core.abc.database.database import AbstractDatabase
 from core.database.backends import SqlBackend
 from core.database.guild import Guild
@@ -9,6 +10,7 @@ class Database(AbstractDatabase):
 
 	_cache: Dict[int, Guild] = {}
 	instance: 'Database'
+	backend: AbstractBackend
 
 	def __init__( self ):
 		self.backend = SqlBackend('./resources/database.db')
