@@ -5,7 +5,7 @@ from discord import Message
 from core.abc.server import AbstractServer
 
 
-insult = ['scemo', 'stupido', 'idiota', 'stronzo', 'stupid', 'idiot']
+insults = ['scemo', 'stupido', 'idiota', 'stronzo', 'stupid', 'idiot']
 
 
 class CommandList:
@@ -83,8 +83,8 @@ def getOrDefault( item: str, default: Coroutine[ Awaitable[ int ], AbstractServe
 	return instance.getOrDefault(item, default)
 
 
-def _isInsult(txt: List[str]) -> bool:
-	for i in txt:
-		if i in insult:
+def _isInsult( txt: List[str] ) -> bool:
+	for word in txt:
+		if word in insults:
 			return True
 	return False
