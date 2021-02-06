@@ -4,7 +4,7 @@ from typing import List, Any, Dict
 class PapUser:
 
 	userId: int
-	permissions: List[bool] = ''
+	permissions: List[bool]
 	gamesWinned: int
 	gamesLost: int
 
@@ -17,9 +17,11 @@ class PapUser:
 
 class PapGame:
 
-	userIds: List[int]
+	gameID: str
+	userIDs: List[int]
 	gameData: Dict[str, Any]
 
-	def __init__(self, userIds: List[int], gameData: Dict[str, Any]):
-		self.userIds = userIds
+	def __init__( self, gameID: str, userIDs: List[int], gameData: Dict[str, Any] ):
+		self.gameID = gameID
+		self.userIDs = userIDs
 		self.gameData = gameData
