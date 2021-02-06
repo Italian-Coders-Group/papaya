@@ -2,11 +2,16 @@ from .Game import Game, check_for_win
 from .AI import AI
 from core.commandList import Command
 from core.abc.server import AbstractServer
+from core.database.database import Database
+from core.dataclass import PapGame, PapUser
+from core.dataclass import utils as gameUtils
 from discord import Message, File
 from core.utils import embed, getColor
 from PIL import Image
 import io
 import os
+from core.fileSystem import File as localFile
+from core import utils
 
 
 game_list = []
@@ -53,6 +58,10 @@ async def ttt(server: AbstractServer, msg: Message):
     '''
     This is temporary, only for testing purposes.
     '''
+
+    server.GetDatabase().setGame(PapGame(gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id]),
+                                         [msg.author.id, msg.mentions[0].id],
+                                         newGame))
 
     if server.guild.id not in d.keys():
         d[server.guild.id] = []
