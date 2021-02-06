@@ -5,7 +5,6 @@ from core.database.backends import SqlBackend
 from core.database.guild import Guild
 
 
-# TODO: finish this
 class Database(AbstractDatabase):
 
 	_cache: Dict[int, Guild] = {}
