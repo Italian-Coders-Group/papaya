@@ -1,6 +1,6 @@
+import math
 import traceback
 from typing import Any, List, Union, KeysView, ItemsView, Tuple, Callable
-import math
 
 import discord
 from discord import Embed, Color

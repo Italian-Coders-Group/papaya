@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, Union, TextIO, Final
+from typing import Dict, Union, TextIO
 
 import discord
 from PIL.Image import Image

@@ -1,11 +1,9 @@
-import json
 import sqlite3 as sql
 from pathlib import Path
-from typing import Dict, Union, List, Any
+from typing import Dict, List, Any
 
-from core.logging import get_logger
 from core.abc.database.backends import AbstractBackend
-
+from core.logging import get_logger
 
 GuildId = str
 Games = List[Dict]

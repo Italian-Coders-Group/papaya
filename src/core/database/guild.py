@@ -1,5 +1,5 @@
-from typing import Dict, Tuple, List, Optional
 import json
+from typing import Dict, Tuple, List, Optional
 
 from core.abc.database.database import AbstractDatabase
 from core.abc.database.guild import AbstractGuild
