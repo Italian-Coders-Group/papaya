@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import Dict, Any
 
 from core.abc.database.database import AbstractDatabase
 from core.database.backends import SqlBackend
@@ -19,6 +19,6 @@ class Database(AbstractDatabase):
 			self._cache[guild] = Guild(guild, self)
 		return self._cache.get(guild)
 
-	def makeRequest( self, sql: str, *args ):
-		self.backend.makeRequest(sql, *args)
+	def makeRequest( self, sql: str, *args ) -> Any:
+		return self.backend.makeRequest(sql, *args)
 
