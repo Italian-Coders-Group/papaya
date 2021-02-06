@@ -7,11 +7,11 @@ from core.dataclass import PapGame, PapUser
 
 class AbstractGuild(metaclass=ABCMeta):
 
-	guild: int
+	guildID: int
 	db: AbstractDatabase
 
 	def __init__(self, guildID: int, db: AbstractDatabase):
-		self.guild = guildID
+		self.guildID = guildID
 		self.db = db
 
 	@abstractmethod
