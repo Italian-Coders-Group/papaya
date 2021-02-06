@@ -15,6 +15,11 @@ class Guild(AbstractGuild):
 		super(Guild, self).__init__(guildID, db)
 
 	def getGame( self, gameID: str ) -> PapGame:
+		"""
+		Returns a PapGame object with the requested ID
+		:param gameID: the ID to search for
+		:return: the PapGame object
+		"""
 		if gameID not in self._gameCache.keys():
 			gameData: List[ Tuple ] = self.db.makeRequest('SELECT * FROM games WHERE guildID = ? AND gameID = ?', self.guildID, gameID )
 			self._gameCache[gameID ] = PapGame(
@@ -25,6 +30,10 @@ class Guild(AbstractGuild):
 		return self._gameCache.get( gameID )
 
 	def setGame( self, game: PapGame ) -> None:
+		"""
+		Update the database by adding this game or by updating the saved game with this one
+		:param game: a PapGame object with new values
+		"""
 		self._gameCache[ game.gameID ] = game
 		if self.hasGame( game.gameID, checkCache=False ):
 			self.db.makeRequest('DELETE FROM games WHERE guildID = ? AND gameID = ?', self.guildID, game.gameID )
@@ -38,9 +47,20 @@ class Guild(AbstractGuild):
 		self.db.save()
 
 	def getUser( self, userID: int ) -> PapUser:
-		pass
+		"""
+		NOT IMPLEMENTED
+		:param userID:
+		:return:
+		"""
+		raise NotImplementedError()
 
 	def hasGame( self, gameID: str, checkCache: bool = True ) -> bool:
+		"""
+		Checks if has a game with that ID
+		:param gameID: the game ID to search for
+		:param checkCache: True if should check the cache too
+		:return: True if we have it
+		"""
 		if checkCache:
 			if gameID in self._gameCache.keys():
 				return True
@@ -53,9 +73,20 @@ class Guild(AbstractGuild):
 		]
 
 	def hasUser( self, userId: int ) -> bool:
-		pass
+		"""
+		NOT IMPLEMENTED
+		:param userID:
+		:return:
+		"""
+		raise NotImplementedError()
 
 	def getGamesForUser( self, userID: int, user: Optional[PapUser] = None ) -> List[PapGame]:
+		"""
+		Returns a list with all games that this user has played
+		:param userID: the user to get the games from, put None if use use a PapUser in the user param
+		:param user: ALTERNATIVE: a PapUser
+		:return: list of games
+		"""
 		games = []
 		for game in self.db.makeRequest( 'SELECT * FROM games WHERE guildID = ?', self.guildID ):
 			if str(userID) in game[2].split(','):
