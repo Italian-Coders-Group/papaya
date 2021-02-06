@@ -13,7 +13,7 @@ class Database(AbstractDatabase):
 	backend: AbstractBackend
 
 	def __init__( self ):
-		self.backend = SqlBackend('./resources/database.db')
+		self.backend = SqlBackend('../resources/database.db')
 		Database.instance = self
 
 	def getGuild( self, guild: int ) -> Guild:
@@ -39,7 +39,8 @@ class Database(AbstractDatabase):
 
 	def save( self ) -> None:
 		"""	Commit changes to the database file	"""
-		self.backend.save()
+		if self.backend is not None:
+			self.backend.save()
 
 	def __del__( self ):
 		# save when closing!

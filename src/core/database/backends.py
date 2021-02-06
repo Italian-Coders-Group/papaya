@@ -30,7 +30,7 @@ class SqlBackend(AbstractBackend):
 		self.cursor = self.dinstance.cursor()
 		if not existed:
 			self.cursor.execute(
-				sql='CREATE TABLE games ( guildID INT NOT NULL, gameID TEXT NOT NULL, userIDs TEXT, gameData TEXT, CONSTRAINT PK_game PRIMARY KEY (guildID, gameID) )'
+				'CREATE TABLE games ( guildID INT NOT NULL, gameID TEXT NOT NULL, userIDs TEXT, gameData TEXT, CONSTRAINT PK_game PRIMARY KEY (guildID, gameID) )'
 			)
 
 	def save( self ) -> None:
