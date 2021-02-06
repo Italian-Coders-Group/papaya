@@ -18,20 +18,21 @@ class Guild(AbstractGuild):
 		if gameID not in self._gameCache.keys():
 			gameData: List[ Tuple ] = self.db.makeRequest('SELECT * FROM games WHERE guildID = ? AND gameID = ?', self.guildID, gameID )
 			self._gameCache[gameID ] = PapGame(
-				userIds=[ int(num) for num in gameData[0][1].split(',')  ],
-				gameData=json.loads( gameData[0][2] )
+				gameID=gameID,
+				userIDs=[ int(num) for num in gameData[0][2].split(',')  ],
+				gameData=json.loads( gameData[0][3] )
 			)
 		return self._gameCache.get( gameID )
 
-	def setGame( self, gameID: str, game: PapGame ) -> None:
-		self._gameCache[ gameID ] = game
-		if self.hasGame( gameID ):
-			self.db.makeRequest('DELETE FROM games WHERE guildID = ? AND gameID = ?', self.guildID, gameID )
+	def setGame( self, game: PapGame ) -> None:
+		self._gameCache[ game.gameID ] = game
+		if self.hasGame( game.gameID, checkCache=False ):
+			self.db.makeRequest('DELETE FROM games WHERE guildID = ? AND gameID = ?', self.guildID, game.gameID )
 		self.db.makeRequest(
 			'INSERT INTO games (guildID, gameID, userIDs, gameData) VALUES (?, ?, ?, ?)',
 			self.guildID,
-			gameID,
-			str( game.userIds )[1:][:-1].replace(' ', ''),
+			game.gameID,
+			str( game.userIDs )[1:][:-1].replace(' ', ''),
 			json.dumps( game.gameData, indent=None, separators=(',', ':') )
 		)
 		self.db.save()
@@ -39,9 +40,10 @@ class Guild(AbstractGuild):
 	def getUser( self, userID: int ) -> PapUser:
 		pass
 
-	def hasGame( self, gameID: str ) -> bool:
-		if gameID in self._gameCache.keys():
-			return True
+	def hasGame( self, gameID: str, checkCache: bool = True ) -> bool:
+		if checkCache:
+			if gameID in self._gameCache.keys():
+				return True
 		return True in [
 			gameID == x[0] for x in self.db.makeRequest(
 				'SELECT * FROM games WHERE guildID = ? AND gameID = ?',
@@ -54,4 +56,15 @@ class Guild(AbstractGuild):
 		pass
 
 	def getGamesForUser( self, userID: int, user: Optional[PapUser] = None ) -> List[PapGame]:
-		pass
+		games = []
+		for game in self.db.makeRequest( 'SELECT * FROM games WHERE guildID = ?', self.guildID ):
+			if str(userID) in game[2].split(','):
+				games.append(
+					PapGame(
+						gameID=game[1],
+						userIDs=[ int( num ) for num in game[ 2 ].split( ',' ) ],
+						gameData=json.loads( game[ 3 ] )
+					)
+				)
+		return games
+

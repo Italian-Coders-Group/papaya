@@ -19,7 +19,7 @@ class AbstractGuild(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def setGame( self, gameID: str, game: PapGame ):
+	def setGame( self, game: PapGame ) -> None:
 		pass
 
 	@abstractmethod
@@ -27,11 +27,11 @@ class AbstractGuild(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def hasGame( self, gameID: str ):
+	def hasGame( self, gameID: str ) -> bool:
 		pass
 
 	@abstractmethod
-	def hasUser( self, userID: int ):
+	def hasUser( self, userID: int ) -> bool:
 		pass
 
 	@abstractmethod
