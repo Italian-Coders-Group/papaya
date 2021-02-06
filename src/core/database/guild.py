@@ -72,7 +72,7 @@ class Guild(AbstractGuild):
 			)
 		]
 
-	def hasUser( self, userId: int ) -> bool:
+	def hasUser( self, userID: int ) -> bool:
 		"""
 		NOT IMPLEMENTED
 		:param userID:
