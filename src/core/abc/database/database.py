@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Any, Dict
+from typing import Any
 
 from core.database.backends import AbstractBackend
 
@@ -13,7 +13,7 @@ class AbstractDatabase(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def makeRequest( self, sql: str, *args ):
+	def makeRequest( self, sql: str, *args ) -> Any:
 		pass
 
 	def __del__(self):
