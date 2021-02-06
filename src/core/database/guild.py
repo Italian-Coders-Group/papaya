@@ -9,10 +9,12 @@ from core.dataclass import PapGame, PapUser
 class Guild(AbstractGuild):
 
 	_gameCache: Dict[str, PapGame]
-	_gameCache: Dict[int, PapUser]
+	_userCache: Dict[int, PapUser]
 
 	def __init__(self, guildID: int, db: AbstractDatabase):
 		super(Guild, self).__init__(guildID, db)
+		self._gameCache = {}
+		self._userCache = {}
 
 	def getGame( self, gameID: str ) -> PapGame:
 		"""
