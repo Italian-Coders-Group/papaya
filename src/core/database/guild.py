@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Optional
 import json
 
 from core.abc.database.database import AbstractDatabase
@@ -34,6 +34,7 @@ class Guild(AbstractGuild):
 			str( game.userIds )[1:][:-1].replace(' ', ''),
 			json.dumps( game.gameData, indent=None, separators=(',', ':') )
 		)
+		self.db.save()
 
 	def getUser( self, userID: int ) -> PapUser:
 		pass
@@ -52,5 +53,5 @@ class Guild(AbstractGuild):
 	def hasUser( self, userId: int ) -> bool:
 		pass
 
-	def getGamesForUser( self, userID: int ) -> List[PapUser]:
+	def getGamesForUser( self, userID: int, user: Optional[PapUser] = None ) -> List[PapGame]:
 		pass

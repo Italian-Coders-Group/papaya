@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from core.abc.database.database import AbstractDatabase
 from core.dataclass import PapGame, PapUser
@@ -35,5 +35,5 @@ class AbstractGuild(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def getGamesForUser( self, userID: int ) -> List[PapUser]:
+	def getGamesForUser( self, userID: int, user: Optional[PapUser] = None ) -> List[PapGame]:
 		pass
