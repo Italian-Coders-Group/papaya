@@ -16,5 +16,6 @@ class AbstractDatabase(metaclass=ABCMeta):
 	def makeRequest( self, sql: str, *args ) -> Any:
 		pass
 
-	def __del__(self):
-		self.backend.save()
+	@abstractmethod
+	def save( self ) -> None:
+		pass

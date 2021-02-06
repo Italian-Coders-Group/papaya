@@ -10,7 +10,7 @@ class Database(AbstractDatabase):
 	_cache: Dict[int, Guild] = {}
 	instance: 'Database'
 
-	def __init__(self):
+	def __init__( self ):
 		self.backend = SqlBackend('./resources/database.db')
 		Database.instance = self
 
@@ -22,3 +22,9 @@ class Database(AbstractDatabase):
 	def makeRequest( self, sql: str, *args ) -> Any:
 		return self.backend.makeRequest(sql, *args)
 
+	def save( self ) -> None:
+		self.backend.save()
+
+	def __del__( self ):
+		# save when closing!
+		self.save()
