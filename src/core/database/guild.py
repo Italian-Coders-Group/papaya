@@ -23,7 +23,7 @@ class Guild(AbstractGuild):
 			)
 		return self._gameCache.get( gameID )
 
-	def setGame( self, gameID: str, game: PapGame ):
+	def setGame( self, gameID: str, game: PapGame ) -> None:
 		self._gameCache[ gameID ] = game
 		if self.hasGame( gameID ):
 			self.db.makeRequest('DELETE FROM games WHERE gameID = ?', gameID )
@@ -34,11 +34,16 @@ class Guild(AbstractGuild):
 			json.dumps( game.gameData, indent=None, separators=(',', ':') )
 		)
 
-	def getMember( self, userID: int ) -> PapUser:
+	def getUser( self, userID: int ) -> PapUser:
 		pass
 
-	def hasGame( self, gameID: str ):
+	def hasGame( self, gameID: str ) -> bool:
+		if gameID in self._gameCache.keys():
+			return True
+		return True in [ gameID == x[0] for x in self.db.makeRequest( 'SELECT * FROM games WHERE gameID = ?', gameID ) ]
+
+	def hasUser( self, userId: int ) -> bool:
 		pass
 
-	def hasUser( self, userId: int ):
+	def getGamesForUser( self, userID: int ) -> List[PapUser]:
 		pass
