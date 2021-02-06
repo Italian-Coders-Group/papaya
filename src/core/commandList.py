@@ -46,6 +46,7 @@ class CommandList:
 		"""
 		name = func.__code__.co_name.lower()
 		self.__Commands[ name if cname is None else cname ] = func
+		return func
 
 	def getOrDefault( self, item: str, default: Coroutine[ Awaitable[int], AbstractServer, Message ] ) -> Coroutine[ Awaitable[ int ], AbstractServer, Message ]:
 		"""
@@ -69,7 +70,7 @@ def Command( func: Coroutine[ Awaitable[ int ], AbstractServer, Message ], cname
 	:param func: coroutine to mark as command
 	:param cname: usually None, used to set the command name
 	"""
-	instance.Command(func, cname)
+	return instance.Command(func, cname)
 
 
 def getOrDefault( item: str, default: Coroutine[ Awaitable[ int ], AbstractServer, Message ] ) -> Coroutine[ Awaitable[ int ], AbstractServer, Message ]:
@@ -80,6 +81,7 @@ def getOrDefault( item: str, default: Coroutine[ Awaitable[ int ], AbstractServe
 	:return: the command or the default coroutine
 	"""
 	return instance.getOrDefault(item, default)
+
 
 def _isInsult(txt: List[str]) -> bool:
 	for i in txt:
