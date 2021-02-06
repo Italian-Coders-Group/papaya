@@ -1,13 +1,16 @@
 import json
 import sqlite3 as sql
+from pathlib import Path
 from typing import Dict, Union, List, Any
 
+from core.logging import get_logger
 from core.abc.database.backends import AbstractBackend
 
 
 GuildId = str
 Games = List[Dict]
 Members = List[Dict]
+logger = get_logger('database')
 
 
 class JsonBackend( AbstractBackend ):
@@ -33,14 +36,27 @@ class JsonBackend( AbstractBackend ):
 		pass
 
 
-# TODO: implement sql backend
 class SqlBackend(AbstractBackend):
 
 	dinstance: sql.Connection
 	cursor: sql.Cursor
+	dbpath: Path
 
 	def __init__( self, path: str = None ):
 		super(SqlBackend, self).__init__( path )
+		self.dbpath = Path(path)
+		# as the connect() function always creates the database file, we need a way to check if it existed _before_
+		# connect is called
+		existed = True
+		if not self.dbpath.exists():
+			existed = False
+			logger.warning(f'database not found at "{path}", will create one')
+		self.dinstance = sql.connect(path)
+		self.cursor = self.dinstance.cursor()
+		if not existed:
+			self.cursor.execute(
+				sql='CREATE TABLE games ( gameID TEXT NOT NULL, userIDs TEXT, gameData TEXT, PRIMARY KEY (gameID) )'
+			)
 
 	def save( self ) -> None:
 		self.dinstance.commit()
