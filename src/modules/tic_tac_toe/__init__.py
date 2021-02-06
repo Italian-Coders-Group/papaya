@@ -59,9 +59,13 @@ async def ttt(server: AbstractServer, msg: Message):
     This is temporary, only for testing purposes.
     '''
 
-    server.GetDatabase().setGame(PapGame(gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id]),
-                                         [msg.author.id, msg.mentions[0].id],
-                                         newGame))
+    server.GetDatabase().setGame(
+		PapGame(
+			gameUtils.getRandomGameID( [msg.author.id, msg.mentions[0].id] ),
+			[msg.author.id, msg.mentions[0].id],
+            newGame
+		)
+	)
 
     if server.guild.id not in d.keys():
         d[server.guild.id] = []
