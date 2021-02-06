@@ -16,10 +16,10 @@ class Guild(AbstractGuild):
 
 	def getGame( self, gameID: str ) -> PapGame:
 		if gameID not in self._gameCache.keys():
-			gamedata: List[ Tuple ] = self.db.makeRequest('SELECT * FROM games WHERE gameID = ?', gameID )
+			gameData: List[ Tuple ] = self.db.makeRequest('SELECT * FROM games WHERE gameID = ?', gameID )
 			self._gameCache[gameID ] = PapGame(
-				userIds=[ int(num) for num in gamedata[0][0].split(',')  ],
-				gameData=json.loads( gamedata[0][1] )
+				userIds=[ int(num) for num in gameData[0][1].split(',')  ],
+				gameData=json.loads( gameData[0][2] )
 			)
 		return self._gameCache.get( gameID )
 
