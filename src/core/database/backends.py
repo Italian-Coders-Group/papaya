@@ -20,8 +20,8 @@ class SqlBackend(AbstractBackend):
 	def __init__( self, path: str = None ):
 		super(SqlBackend, self).__init__( path )
 		self.dbpath = Path(path)
-		# as the connect() function always creates the database file, we need a way to check if it existed _before_
-		# connect is called
+		# as the connect() function always creates the database filewhen it doesn't exist,
+		# we need a way to check if it existed _before_ connect is called, so we can create the needed tables
 		existed = True
 		if not self.dbpath.exists():
 			existed = False
