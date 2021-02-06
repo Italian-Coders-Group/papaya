@@ -248,20 +248,22 @@ class AbstractFolder( metaclass=ABCMeta ):
 
 	@abstractmethod
 	def walk( self, ftype: fileType = fileType.both ) -> Union[AbstractFile, 'AbstractFolder']:
+		""" walk on all folders and files, basically same as Folder.__iter__(), but with a fancy name """
 		pass
 
 	@abstractmethod
 	def exists( self ) -> bool:
-		""" Checks if this file exist on disk """
+		""" Checks if this folder exist on disk """
 		pass
 
 	@abstractmethod
 	def touch( self ) -> None:
-		"""	Creates this file on disk """
+		"""	Creates this folder on disk """
 		pass
 
 	@abstractmethod
 	def isFolder( self ) -> bool:
+		""" returns True if this object represents a folder """
 		pass
 
 	@abstractmethod
@@ -281,22 +283,49 @@ class AbstractFileSystem(metaclass=ABCMeta):
 
 	@abstractmethod
 	def get( self, path: str, ftype: fileType, layer: int = 0 ) -> Union[AbstractFile, AbstractFolder]:
+		"""
+		Gets a file, folder from this on
+		:param path: path to file/folder to get
+		:param ftype: file type, should be fileType.file or fileType.folder, defaults to fileType.file
+		:param layer: PRIVATE PARAMETER
+		:return: a File or Folder object
+		"""
 		pass
 
 	@abstractmethod
-	def getAsset( self, path: str, layer: int = 0 ) -> AbstractFile:
+	def getAsset( self, path: str ) -> AbstractFile:
+		"""
+		Gets a file from path
+		:param path: file path
+		:return: File object
+		"""
 		pass
 
 	@abstractmethod
-	def getFolder( self, path: Union[Path, str], layer: int = 0 ) -> AbstractFolder:
+	def getFolder( self, path: Union[Path, str] ) -> AbstractFolder:
+		"""
+		Gets a folder from path
+		:param path: folder path
+		:return: Folder object
+		"""
 		pass
 
 	@abstractmethod
-	def create( self, path: str ) -> None:
+	def create( self, path: str, name: str ) -> None:
+		"""
+		Creates a folder or file on this path
+		NOT IMPLEMENTED
+		:param path: path to the folder/file
+		:param name: file/folder name
+		"""
 		pass
 
 	@abstractmethod
 	def asFolder( self ) -> AbstractFolder:
+		"""
+		Get this filesystem as folder object
+		:return: folder object representing this filesystem path
+		"""
 		pass
 
 	@abstractmethod
