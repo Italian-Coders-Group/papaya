@@ -9,26 +9,26 @@ class AbstractGuild(metaclass=ABCMeta):
 	guild: int
 	db: AbstractDatabase
 
-	def __init__(self, guildId: int, db: AbstractDatabase):
-		self.guild = guildId
+	def __init__(self, guildID: int, db: AbstractDatabase):
+		self.guild = guildID
 		self.db = db
 
 	@abstractmethod
-	def getGame( self, gameId: str ) -> PapGame:
+	def getGame( self, gameID: str ) -> PapGame:
 		pass
 
 	@abstractmethod
-	def setGame( self, gameId: str, game: PapGame ):
+	def setGame( self, gameID: str, game: PapGame ):
 		pass
 
 	@abstractmethod
-	def getMember( self, userId: int ) -> PapUser:
+	def getMember( self, userID: int ) -> PapUser:
 		pass
 
 	@abstractmethod
-	def hasGame( self, gameId: str ):
+	def hasGame( self, gameID: str ):
 		pass
 
 	@abstractmethod
-	def hasUser( self, userId: int ):
+	def hasUser( self, userID: int ):
 		pass
