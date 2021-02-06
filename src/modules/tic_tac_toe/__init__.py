@@ -1,4 +1,5 @@
 from .Game import Game, check_for_win
+from .AI import AI
 from core.commandList import Command
 from core.abc.server import AbstractServer
 from discord import Message, File
@@ -128,8 +129,10 @@ async def testbase(server: AbstractServer, msg: Message):
 @Command
 async def grid(server: AbstractServer, msg: Message):
     games = [["x", "o", "x"], ["x", "x", "o"], ["x", "o", "x"]]
-    has_won = True if check_for_win(games, "x") else False
-    print(has_won )
+    testAI = AI("x", "x")
+    test = testAI.get_board_status(games)
+
+    print(test)
 
 
 @Command
