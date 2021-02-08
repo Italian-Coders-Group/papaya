@@ -20,18 +20,22 @@ class SqlBackend(AbstractBackend):
 	def __init__( self, path: str = None ):
 		super(SqlBackend, self).__init__( path )
 		self.dbpath = Path(path)
-		# as the connect() function always creates the database filewhen it doesn't exist,
-		# we need a way to check if it existed _before_ connect is called, so we can create the needed tables
-		existed = True
-		if not self.dbpath.exists():
-			existed = False
-			logger.warning(f'database not found at "{path}", will create one')
 		self.dinstance = sql.connect(path)
 		self.cursor = self.dinstance.cursor()
-		if not existed:
-			self.cursor.execute(
-				'CREATE TABLE games ( guildID INT NOT NULL, gameID TEXT NOT NULL, userIDs TEXT, gameData TEXT, CONSTRAINT PK_game PRIMARY KEY (guildID, gameID) )'
+		# conditionally creates the tables
+		self.cursor.execute(
+			'''
+			CREATE TABLE IF NOT EXISTS games (
+				guildID INT NOT NULL,
+				gameID TEXT NOT NULL,
+				gameType TEXT NOT NULL,
+				userIDs TEXT NOT NULL,
+				gameData TEXT NOT NULL,
+				live INT[0] NOT NULL,
+				CONSTRAINT PK_game PRIMARY KEY (guildID, gameID)
 			)
+			'''
+		)
 
 	def save( self ) -> None:
 		"""	Commit changes to the database file	"""
