@@ -61,7 +61,7 @@ class AbstractGuild(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def getGamesForUser( self, userID: int, gameType: str, user: Optional[PapUser] = None ) -> List[PapGame]:
+	def getGamesForUser( self, userID: int, gameType: str = 'any', user: Optional[PapUser] = None ) -> List[PapGame]:
 		"""
 		Returns a list with all games that this user has played
 		:param gameType: the type of the game, use "any" for any type
@@ -72,7 +72,7 @@ class AbstractGuild(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def getLiveGameForUser( self, gameType: str, userID: int, user: Optional[ PapUser ] = None ) -> List[ PapGame ]:
+	def getLiveGameForUser( self, userID: int, gameType: str = 'any', user: Optional[ PapUser ] = None ) -> List[ PapGame ]:
 		"""
 		Returns a list with all live games that this user is playing
 		:param gameType: the type of the game, use "any" for any type
