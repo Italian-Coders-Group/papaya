@@ -20,8 +20,12 @@ class PapGame:
 	gameID: str
 	userIDs: List[int]
 	gameData: Dict[str, Any]
+	gameType: str
+	live: bool
 
-	def __init__( self, gameID: str, userIDs: List[int], gameData: Dict[str, Any] ):
+	def __init__( self, gameID: str, gameType: str, userIDs: List[int], gameData: Dict[str, Any], live: bool ):
 		self.gameID = gameID
+		self.gameType = gameType
 		self.userIDs = userIDs
 		self.gameData = gameData
+		self.live = live
