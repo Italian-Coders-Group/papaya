@@ -41,11 +41,12 @@ class AbstractGuild(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def hasGame( self, gameID: str ) -> bool:
+	def hasGame( self, gameID: str, checkCache: bool = True, gameType: Optional[str] = 'any' ) -> bool:
 		"""
 		Checks if has a game with that ID
 		:param gameID: the game ID to search for
 		:param checkCache: True if should check the cache too
+		:param gameType: the type of the game to search, optional, can make searching faster
 		:return: True if we have it
 		"""
 		pass
@@ -60,9 +61,21 @@ class AbstractGuild(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def getGamesForUser( self, userID: int, user: Optional[PapUser] = None ) -> List[PapGame]:
+	def getGamesForUser( self, userID: int, gameType: str, user: Optional[PapUser] = None ) -> List[PapGame]:
 		"""
 		Returns a list with all games that this user has played
+		:param gameType: the type of the game, use "any" for any type
+		:param userID: the user to get the games from, put None if use use a PapUser in the user param
+		:param user: ALTERNATIVE: a PapUser
+		:return: list of games
+		"""
+		pass
+
+	@abstractmethod
+	def getLiveGameForUser( self, gameType: str, userID: int, user: Optional[ PapUser ] = None ) -> List[ PapGame ]:
+		"""
+		Returns a list with all live games that this user is playing
+		:param gameType: the type of the game, use "any" for any type
 		:param userID: the user to get the games from, put None if use use a PapUser in the user param
 		:param user: ALTERNATIVE: a PapUser
 		:return: list of games
