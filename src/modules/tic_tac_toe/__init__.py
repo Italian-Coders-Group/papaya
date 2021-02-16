@@ -13,8 +13,7 @@ import os
 from core.fileSystem import File as localFile
 from core import utils
 
-
-game_list = []
+# game_list = []
 # this json is temporary, it's only purpose is that to hold games, maybe even update them, yeah
 
 """
@@ -31,97 +30,73 @@ game_list = []
         ]
     }
 """
-d = {}
-
-
-def getKeyFromUser(guildId: int, userInput: int):
-
-    if guildId not in d.keys():
-        return 0, "Server not found"
-
-    if not d[guildId]:
-        return 1, "This server has no games running"
-
-    gameDict: dict
-    for i, gameDict in enumerate(d[guildId]):
-        for key in gameDict.keys():
-            ids = key.split(" ")
-            if str(userInput) in ids:
-                return 2, key, i
-
-    return 3, "User not Found"
+# d = {}
+#
+#
+# def getKeyFromUser(guildId: int, userInput: int):
+#     if guildId not in d.keys():
+#         return 0, "Server not found"
+#
+#     if not d[guildId]:
+#         return 1, "This server has no games running"
+#
+#     gameDict: dict
+#     for i, gameDict in enumerate(d[guildId]):
+#         for key in gameDict.keys():
+#             ids = key.split(" ")
+#             if str(userInput) in ids:
+#                 return 2, key, i
+#
+#     return 3, "User not Found"
 
 
 @Command
 async def ttt(server: AbstractServer, msg: Message):
-    newGame = Game(msg.author, msg.mentions[0])
-    '''
-    This is temporary, only for testing purposes.
-    '''
+    newGame = Game(player1=msg.author, player2=msg.mentions[0])
 
     server.GetDatabase().setGame(
-		PapGame(
-			gameUtils.getRandomGameID( [msg.author.id, msg.mentions[0].id] ),
-			[msg.author.id, msg.mentions[0].id],
-            newGame
-		)
-	)
+        PapGame(
+            gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id]),
+            "tic tac toe",
+            [msg.author.id, msg.mentions[0].id],
+            newGame.getData(),
+            True
+        )
+    )
 
-    if server.guild.id not in d.keys():
-        d[server.guild.id] = []
-
-    localDict = {
-        f"{msg.author.id} {msg.mentions[0].id}": newGame
-    }
-    for valueList in d.values():
-        for x in valueList:
-            for key in x.keys():
-                ids = key.split(" ")
-                for ID in ids:
-                    for k in localDict.keys():
-                        if ID in k.split(" "):
-                            await msg.channel.send(
-                                f"You cannot make this game, one or both contestant are already in another game")
-                            print(d)
-                            return
-                # if key in localDict.keys():
-                #     print(localDict.keys())
-                #     await msg.channel.send(f"You cannot make this game, one or both contestant are already in another game")
-                #     return
-
-    d[server.guild.id].append(localDict)
-
-    print(d)
     await msg.channel.send(embed=embed("New Game", f"This game is between {await newGame.player1.getUser()} and "
                                                    f"{await newGame.player2.getUser()}", getColor("255,0,0")))
 
 
 @Command
 async def draw(server: AbstractServer, msg: Message):
-    if server.guild.id not in d.keys():
-        await msg.channel.send("This server has no games running.")
+
+    gameData = server.GetDatabase().getliveGamesForUser(msg.author.id)
+
+    resumeGame = Game(data=gameData)
+
+    if game.turn.user is not msg.author.id:
+        await msg.channel.send("Ehi bud it's not your turn yet")
     else:
-        errorCode, key, i = getKeyFromUser(server.guild.id, msg.author.id)
-
-        if errorCode == 2:
-            game = d[server.guild.id][i][key]
-        else:
-            print(errorCode, key)
-
-        if game.turn.user is not msg.author.id:
-            await msg.channel.send("Ehi bud it's not your turn yet")
-        else:
-            params = msg.content.split()
-            pos = params[1]
-            newState, code = game.makeMove(pos)
-            await msg.channel.send(file=File(newState, "game.png"))
-            if code == 3:
-                await msg.channel.send("That position is invalid, try again")
-            if code == 0:
-                await msg.channel.send("The game is still going on")
-            if code == 1:
-                await msg.channel.send(f"Congrats {msg.author.mention} you won")
-                del d[server.guild.id][i][key]
+        params = msg.content.split()
+        pos = params[1]
+        newState, code = game.makeMove(pos)
+        await msg.channel.send(file=File(newState, "game.png"))
+        if code == 3:
+            await msg.channel.send("That position is invalid, try again")
+        if code == 0:
+            await msg.channel.send("The game is still going on")
+        if code == 1:
+            await msg.channel.send(f"Congrats {msg.author.mention} you won")
+            server.GetDatabase().setGame(
+                PapGame(
+                    gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id]),
+                    "tic tac toe",
+                    [msg.author.id, msg.mentions[0].id],
+                    newGame.getData(),
+                    False
+                )
+            )
 
 
 @Command
