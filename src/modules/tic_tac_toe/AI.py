@@ -42,6 +42,9 @@ class AI:
         self.symbol = symbol
         self.simpleBoard = []
 
+    def getUser(self):
+        return "AI"
+
     def get_board_status(self, board):
         simpleBoard = []
         for i, row in enumerate(board):
