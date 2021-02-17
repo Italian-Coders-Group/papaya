@@ -172,3 +172,25 @@ class Guild(AbstractGuild):
 					)
 				)
 		return games
+
+	def getStatsForUserInGuild(self, userID: int, guildID: str, gameType: str = 'any') -> PapUser:
+		"""
+		Returns a user in the guild with his stats, None if not found
+		:param userID:
+		:param guildID:
+		:param gameType:
+		:return: user
+		"""
+
+		user = self.db.makeRequest(
+			'SELECT * FROM stats WHERE userID = ? AND guildID = ?',
+			userID,
+			self.guildID
+		) if gameType == 'any' else self.db.makeRequest(
+			'SELECT * FROM stats WHERE userID = ? AND guildID = ? AND gameType = ?',
+			userID,
+			self.guildID,
+			gameType
+		)
+
+		return user[0] if len(user) > 0 else None
