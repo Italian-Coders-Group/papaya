@@ -36,6 +36,28 @@ class SqlBackend(AbstractBackend):
 			)
 			'''
 		)
+		self.cursor.execute(
+			'''
+            CREATE TABLE IF NOT EXISTS stats (
+                guildID INT NOT NULL,
+                userID TEXT NOT NULL,
+                gameType TEXT NOT NULL,
+                wins INT NOT NULL DEFAULT 0,
+                loses INT NOT NULL DEFAULT 0,
+                ties INT NOT NULL DEFAULT 0,
+                CONSTRAINT PK_stats PRIMARY KEY (guildID, userID)
+            )
+            '''
+		)
+		self.cursor.execute(
+			'''
+			CREATE TABLE IF NOT EXISTS ranks (
+				rank TEXT NOT NULL,
+				minPoints INT NOT NULL,
+				maxPoints INT NOT NULL
+			)
+			'''
+		)
 
 	def save( self ) -> None:
 		"""	Commit changes to the database file	"""
