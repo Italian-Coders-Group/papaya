@@ -17,7 +17,7 @@ class Player(BasePlayer):
         :param symbol:
         """
 
-        self.user = user.id
+        self.user = user
         self.sign = sign
 
         self.symbol = symbol

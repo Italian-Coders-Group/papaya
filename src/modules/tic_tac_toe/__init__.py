@@ -13,42 +13,6 @@ import os
 from core.fileSystem import File as localFile
 from core import utils
 
-# game_list = []
-# this json is temporary, it's only purpose is that to hold games, maybe even update them, yeah
-
-"""
-    Some example for the json i had in mind
-    
-    games = {
-        server.guild.id: [
-            {
-                "id1 id2": gameobject
-            },
-            {
-                "id1 id2": gameobject
-            }
-        ]
-    }
-"""
-# d = {}
-#
-#
-# def getKeyFromUser(guildId: int, userInput: int):
-#     if guildId not in d.keys():
-#         return 0, "Server not found"
-#
-#     if not d[guildId]:
-#         return 1, "This server has no games running"
-#
-#     gameDict: dict
-#     for i, gameDict in enumerate(d[guildId]):
-#         for key in gameDict.keys():
-#             ids = key.split(" ")
-#             if str(userInput) in ids:
-#                 return 2, key, i
-#
-#     return 3, "User not Found"
-
 
 @Command
 async def ttt(server: AbstractServer, msg: Message):
@@ -71,16 +35,22 @@ async def ttt(server: AbstractServer, msg: Message):
 @Command
 async def draw(server: AbstractServer, msg: Message):
 
-    gameData = server.GetDatabase().getliveGamesForUser(msg.author.id)
+    gameData = server.GetDatabase().getLiveGameForUser(msg.author.id)
 
-    resumeGame = Game(data=gameData)
+    still_live = True
 
-    if game.turn.user is not msg.author.id:
+    if not gameData:
+        await msg.channel.send("No games for you bud")
+        return
+
+    resumeGame = Game(data=gameData[0])
+
+    if resumeGame.turn.user != msg.author.id:
         await msg.channel.send("Ehi bud it's not your turn yet")
     else:
         params = msg.content.split()
         pos = params[1]
-        newState, code = game.makeMove(pos)
+        newState, code = resumeGame.makeMove(pos)
         await msg.channel.send(file=File(newState, "game.png"))
         if code == 3:
             await msg.channel.send("That position is invalid, try again")
@@ -88,15 +58,17 @@ async def draw(server: AbstractServer, msg: Message):
             await msg.channel.send("The game is still going on")
         if code == 1:
             await msg.channel.send(f"Congrats {msg.author.mention} you won")
-            server.GetDatabase().setGame(
-                PapGame(
-                    gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id]),
-                    "tic tac toe",
-                    [msg.author.id, msg.mentions[0].id],
-                    newGame.getData(),
-                    False
-                )
-            )
+            still_live = False
+
+    server.GetDatabase().setGame(
+        PapGame(
+            gameData[0].gameID,
+            gameData[0].gameType,
+            gameData[0].userIDs,
+            resumeGame.getData(),
+            still_live
+        )
+    )
 
 
 @Command
