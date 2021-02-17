@@ -16,20 +16,26 @@ from core import utils
 
 @Command
 async def ttt(server: AbstractServer, msg: Message):
-    newGame = Game(player1=msg.author, player2=msg.mentions[0])
+    pvp = True
+    if not msg.mentions or msg.mentions[0].id in [781540733173366794, 485434957129580545]:
+        await msg.channel.send("You are going to play against our AI.")
+        pvp = False
+    player1 = msg.author
+    player2 = msg.mentions[0] if pvp else None
+    newGame = Game(player1=player1, player2=player2)
 
     server.GetDatabase().setGame(
         PapGame(
-            gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id]),
+            gameUtils.getRandomGameID([player1.id, player2.id if pvp else 0]),
             "tic tac toe",
-            [msg.author.id, msg.mentions[0].id],
+            [msg.author.id, msg.mentions[0].id] if pvp else [msg.author.id, "AI"],
             newGame.getData(),
             True
         )
     )
 
-    await msg.channel.send(embed=embed("New Game", f"This game is between {await newGame.player1.getUser()} and "
-                                                   f"{await newGame.player2.getUser()}", getColor("255,0,0")))
+    await msg.channel.send(embed=embed("New Game", f"This game is between {newGame.player1.getUser()} and "
+                                                   f"{newGame.player2.getUser()}", getColor("255,0,0")))
 
 
 @Command
@@ -69,6 +75,13 @@ async def draw(server: AbstractServer, msg: Message):
             still_live
         )
     )
+
+
+@Command
+async def tttstats(server: AbstractServer, msg: Message):
+    user = server.GetDatabase().getStatsForUserInGuild(msg.author.id)
+    await msg.channel.send(f"Here are your stats. Wins: {user[3]}. Losses: {user[4]}. Ties: {user[5]}")
+    print(user)
 
 
 @Command
