@@ -23,3 +23,5 @@ class Player(BasePlayer):
         self.symbol = symbol
         print(f"{user} has symbol {type(symbol)}")
 
+    def getUser( self ):
+        return self.user
