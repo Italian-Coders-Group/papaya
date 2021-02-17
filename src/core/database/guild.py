@@ -84,13 +84,13 @@ class Guild(AbstractGuild):
 			# their id is gameID
 			'SELECT * FROM games WHERE guildID = ? AND gameID = ? AND gameType = ?',
 			self.guildID,
-			gameID
+			gameID,
+			gameType
 		) if gameType != 'any' else self.db.makeRequest(
 			# EXPLANATION: select all games that are from this guild and their id is gameID
 			'SELECT * FROM games WHERE guildID = ? AND gameID = ?',
 			self.guildID,
-			gameID,
-			gameType
+			gameID
 		)
 		return len( games ) > 0
 
@@ -137,7 +137,8 @@ class Guild(AbstractGuild):
 				)
 		return games
 
-	def getLiveGameForUser( self, userID: int, gameType: str = 'any', user: Optional[ PapUser ] = None ) -> List[ PapGame ]:
+	def getLiveGameForUser( self, userID: int, gameType: str = 'any', user: Optional[ PapUser ] = None ) -> List[
+		PapGame ]:
 		"""
 		Returns a list with all live games that this user is playing
 		:param gameType: the type of the game, use "any" for any type
