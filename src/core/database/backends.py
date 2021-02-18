@@ -45,7 +45,7 @@ class SqlBackend(AbstractBackend):
                 wins INT NOT NULL DEFAULT 0,
                 loses INT NOT NULL DEFAULT 0,
                 ties INT NOT NULL DEFAULT 0,
-                CONSTRAINT PK_stats PRIMARY KEY (guildID, userID)
+                CONSTRAINT PK_stats PRIMARY KEY (guildID, userID, gameType)
             )
             '''
 		)
