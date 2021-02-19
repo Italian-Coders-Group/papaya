@@ -3,7 +3,7 @@ from typing import Dict, Tuple, List, Optional
 
 from core.abc.database.database import AbstractDatabase
 from core.abc.database.guild import AbstractGuild
-from core.dataclass import PapGame, PapUser
+from core.dataclass import PapGame, PapUser, PapStats
 
 
 class Guild(AbstractGuild):
@@ -173,7 +173,7 @@ class Guild(AbstractGuild):
 				)
 		return games
 
-	def getStatsForUserInGuild(self, userID: int, gameType: str = 'any') -> PapUser:
+	def getStatsForUserInGuild(self, userID: int, gameType: str = 'any') -> PapStats:
 		"""
 		Returns a user in the guild with his stats, None if not found
 		:param userID:
@@ -182,7 +182,7 @@ class Guild(AbstractGuild):
 		"""
 
 		user = self.db.makeRequest(
-			'SELECT userID, guildID, '
+			'SELECT guildID, userID,'
 			'(SELECT SUM(wins) FROM stats WHERE userID = ? AND guildID = ?) AS totalWins,'
 			'(SELECT SUM(loses) FROM stats WHERE userID = ? AND guildID = ?) AS totalLoses,'
 			'(SELECT SUM(ties) FROM stats WHERE userID = ? AND guildID = ?) AS totalTies'
@@ -201,5 +201,48 @@ class Guild(AbstractGuild):
 			self.guildID,
 			gameType
 		)
+		middleUser = user[0]
+		if gameType == "any":
+			returnUser = PapStats(
+				userId=middleUser[1],
+				gamesWon=middleUser[2],
+				gamesLost=middleUser[3],
+				gamesTied=middleUser[4]
+			)
+		returnUser = PapStats(
+			userId=middleUser[1],
+			gameType=middleUser[2],
+			gamesWon=middleUser[3],
+			gamesLost=middleUser[4],
+			gamesTied=middleUser[5],
+			rank=self.getRankForUserInGame([user[0][3], user[0][4], user[0][5]], user[0][2])
+		) if len(user) > 0 else None
 
-		return user[0] if len(user) > 0 else None
+		return returnUser
+
+	def getRankForUserInGame(self, userStats: list, gameType: str) -> str:
+		"""
+        Returns the string for the rank in a specified guild, returns 0 if gameType is any
+        :param userStats:
+        :param gameType:
+        :return:
+        """
+		rank = self.db.makeRequest(
+			"SELECT rank from ranks WHERE ? BETWEEN minPoints AND maxPoints",
+			self.calculateRankForUserStats(userStats) if gameType != "any" else 0
+		)
+
+		return rank[0][0] if not None else "no rank"
+
+	def calculateRankForUserStats(self, userStats: list) -> int:
+		"""
+		Calculates the rank for single gameType. Returns 0 if gametype is any
+		:param userStats:
+		:return:
+		"""
+
+		wins, losses, ties = userStats
+
+		final = (wins * 1) + (losses * -1) + (ties * 0)
+
+		return final

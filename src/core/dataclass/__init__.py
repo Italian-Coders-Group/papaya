@@ -5,14 +5,28 @@ class PapUser:
 
 	userId: int
 	permissions: List[bool]
-	gamesWinned: int
-	gamesLost: int
 
-	def __init__( self, userId: int, permissions: List[bool], gamesWinned: int, gamesLost: int ):
+	def __init__( self, userId: int, permissions: List[bool]):
 		self.userId = userId
 		self.permissions = permissions
-		self.gamesWinned = gamesWinned
+
+
+class PapStats:
+
+	userId: int
+	gameType: str
+	gamesWon: int
+	gamesLost: int
+	gamesTied: int
+	rank: str
+
+	def __init__(self, userId: int, gameType: str, gamesWon: int, gamesLost: int, gamesTied: int, rank: str):
+		self.userId = userId
+		self.gameType = gameType
+		self.gamesWon = gamesWon
 		self.gamesLost = gamesLost
+		self.gamesTied = gamesTied
+		self.rank = rank
 
 
 class PapGame:
