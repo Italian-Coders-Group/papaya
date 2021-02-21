@@ -102,6 +102,39 @@ class Guild(AbstractGuild):
 		"""
 		raise NotImplementedError()
 
+	def hasGametype(self, gameType: str) -> list:
+		"""
+		Returns True if game type exist else False
+		:param gameType:
+		:return:
+		"""
+		if gameType == "any":
+			hasGametype = [True, 1]
+		else:
+			selection = self.db.makeRequest(
+				"SELECT gametype FROM gametypes WHERE gametype = ?",
+				gameType
+			)
+			if len(selection) == 0:
+				hasGametype = [False, 0]
+			else:
+				hasGametype = [True, 0]
+		return hasGametype
+
+	def getGametypes(self) -> list:
+		"""
+		Returns a list of Available categories
+		:return:
+		"""
+		lastGameTypes = []
+		crudeGameTypes = self.db.makeRequest(
+			"SELECT gametype from gametypes"
+		)
+		for gametype in crudeGameTypes:
+			lastGameTypes.append(gametype[0])
+
+		return lastGameTypes
+
 	def getGamesForUser( self, userID: int, gameType: str = 'any', user: Optional[PapUser] = None ) -> List[PapGame]:
 		"""
 		Returns a list with all games that this user has played
@@ -173,14 +206,21 @@ class Guild(AbstractGuild):
 				)
 		return games
 
-	def getStatsForUserInGuild(self, userID: int, gameType: str = 'any') -> PapStats:
+	def getStatsForUserInGuild(self, userID: int, gameType: str = "any") -> PapStats:
 		"""
 		Returns a user in the guild with his stats, None if not found
 		:param userID:
 		:param gameType:
 		:return: user
 		"""
-
+		validGametype = self.hasGametype(gameType)
+		print(validGametype)
+		if not validGametype[0]:
+			validType = "any"
+		else:
+			validType = gameType
+		print(validType)
+		print(gameType)
 		user = self.db.makeRequest(
 			'SELECT guildID, userID,'
 			'(SELECT SUM(wins) FROM stats WHERE userID = ? AND guildID = ?) AS totalWins,'
@@ -195,28 +235,33 @@ class Guild(AbstractGuild):
 			self.guildID,
 			userID,
 			self.guildID
-		) if gameType == 'any' else self.db.makeRequest(
+		) if gameType == "any" else self.db.makeRequest(
 			'SELECT * FROM stats WHERE userID = ? AND guildID = ? AND gameType = ?',
 			userID,
 			self.guildID,
-			gameType
+			validType
 		)
-		middleUser = user[0]
-		if gameType == "any":
-			returnUser = PapStats(
-				userId=middleUser[1],
-				gamesWon=middleUser[2],
-				gamesLost=middleUser[3],
-				gamesTied=middleUser[4]
-			)
-		returnUser = PapStats(
-			userId=middleUser[1],
-			gameType=middleUser[2],
-			gamesWon=middleUser[3],
-			gamesLost=middleUser[4],
-			gamesTied=middleUser[5],
-			rank=self.getRankForUserInGame([user[0][3], user[0][4], user[0][5]], user[0][2])
-		) if len(user) > 0 else None
+
+		if len(user) > 0:
+			middleUser = user[0]
+			if validType == "any":
+				returnUser = PapStats(
+					userId=middleUser[1],
+					gameType=validType,
+					gamesWon=middleUser[2],
+					gamesLost=middleUser[3],
+					gamesTied=middleUser[4],
+					rank=None
+				)
+			else:
+				returnUser = PapStats(
+					userId=middleUser[1],
+					gameType=middleUser[2],
+					gamesWon=middleUser[3],
+					gamesLost=middleUser[4],
+					gamesTied=middleUser[5],
+					rank=self.getRankForUserInGame([middleUser[3], middleUser[4], middleUser[5]], middleUser[2])
+				)
 
 		return returnUser
 

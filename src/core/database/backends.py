@@ -58,6 +58,14 @@ class SqlBackend(AbstractBackend):
 			)
 			'''
 		)
+		self.cursor.execute(
+			'''
+            CREATE TABLE IF NOT EXISTS gametypes (
+                gametype text NOT NULL,
+                CONSTRAINT PK_gametypes PRIMARY KEY (gametype)
+            )
+            '''
+		)
 
 	def save( self ) -> None:
 		"""	Commit changes to the database file	"""

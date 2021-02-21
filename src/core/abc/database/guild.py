@@ -60,6 +60,21 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 		pass
 
+	def hasGametype(self, gameType: str) -> list:
+		"""
+		Returns True if game type exist else False
+		:param gameType:
+		:return:
+		"""
+		pass
+
+	def getGametypes(self) -> list:
+		"""
+		Returns a list of Available categories
+		:return:
+		"""
+		pass
+
 	@abstractmethod
 	def getGamesForUser( self, userID: int, gameType: str = 'any', user: Optional[PapUser] = None ) -> List[PapGame]:
 		"""
