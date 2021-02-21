@@ -80,9 +80,9 @@ class Game(BaseGame):
         """
 
         if data is None:
-            self.player1 = Player(player1.id, Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\x.png"), "x")
-            self.player2 = Player(player2.id, Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"),
-                                  "o") if player2 is not None else AI(Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
+            self.player1 = Player(player1.id, Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/x.png"), "x")
+            self.player2 = Player(player2.id, Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/o.png"),
+                                  "o") if player2 is not None else AI(Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/o.png"), "o")
             self.grid = [['', '', ''], ['', '', ''], ['', '', '']]
             self.turn = self.player2 if self.player2.user != "AI" else self.player1
         else:
@@ -157,16 +157,19 @@ class Game(BaseGame):
     def parseData(self, data: PapGame):
         gameData = data.gameData
         print(gameData)
-        self.player1 = Player(gameData["player1ID"], Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\x.png"), "x")
+        self.player1 = Player(gameData["player1ID"], Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/x.png"), "x")
         if gameData["player2ID"] == "AI":
-            self.player2 = AI(Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
+            self.player2 = AI(Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/o.png"), "o")
         else:
-            self.player2 = Player(gameData["player2ID"], Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
+            self.player2 = Player(gameData["player2ID"], Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/o.png"),
+                                  "o")
 
         if gameData["currentTurn"] == gameData["player1ID"]:
-            self.turn = Player(gameData["player1ID"], Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\x.png"), "x")
+            self.turn = Player(gameData["player1ID"], Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/x.png"),
+                               "x")
         else:
-            self.turn = Player(gameData["player2ID"], Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
+            self.turn = Player(gameData["player2ID"], Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/o.png"),
+                               "o")
         # else:
         #     self.turn = AI(Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
 

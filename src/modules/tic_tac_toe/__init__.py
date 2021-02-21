@@ -93,7 +93,7 @@ async def viewgames(server: AbstractServer, msg: Message):
 @Command
 async def testbase(server: AbstractServer, msg: Message):
     buffer = io.BytesIO()
-    image = Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\x.png")
+    image = Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/x.png")
     image.save(buffer, "PNG")
     buffer.seek(0)
     await msg.channel.send(file=File(buffer, "testBase.png"))
