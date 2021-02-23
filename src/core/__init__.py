@@ -7,6 +7,7 @@ from .database.database import Database
 from . import server
 from . import utils
 from .logging import get_logger
+from .dataclass import PapGame
 import modules
 
 logger = get_logger( 'BOT' )
@@ -26,6 +27,7 @@ class Bot:
 		self.client.event( self.on_message )
 		self.database = Database()
 		modules.initializeGames()
+
 
 	def run( self, token: str ):
 		""" Run the bot, its a blocking call """
@@ -81,3 +83,32 @@ class Bot:
 		else:
 			# call the right handler for the server
 			await self.servers[ msg.guild.id ].handleMsg( msg )
+		acceptList = self.database.getGuild(msg.guild.id).getAccept(msg.author.id)
+		delAccept = False
+		if not acceptList:
+			pass
+		elif (acceptList[2] == msg.channel.id) and ("accept" in msg.content):
+			delAccept = self.database.getGuild(msg.guild.id).delAccept(msg.author.id)
+			accepted = True
+		elif (acceptList[2] == msg.channel.id) and ("deny" in msg.content):
+			delAccept = self.database.getGuild(msg.guild.id).delAccept(msg.author.id)
+			accepted = False
+		else:
+			pass
+
+		if acceptList:
+			if delAccept:
+				if accepted:
+					await msg.channel.send(f"Prepare, {msg.author} accepted the game")
+					game = self.database.getGuild(msg.guild.id).getGamesForUser(msg.author.id)[0]
+					self.database.getGuild(msg.guild.id).setGame(
+						PapGame(
+							gameID=game.gameID,
+							gameType=game.gameType,
+							userIDs=game.userIDs,
+							gameData=game.gameData,
+							live=True
+						)
+					)
+				else:
+					await msg.channel.send(f"Sorry, {msg.author} denied the , the game is not live")
