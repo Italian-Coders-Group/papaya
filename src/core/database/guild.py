@@ -291,3 +291,77 @@ class Guild(AbstractGuild):
 		final = (wins * 1) + (losses * -1) + (ties * 0)
 
 		return final
+
+	def makeAccept(self, userID: int, channelID):
+		"""
+        Make an accept action
+        :param channelID:
+        :param userID:
+        :return:
+        """
+		check = self.checkAccept(userID)
+		if not check:
+			accept = self.db.makeRequest(
+				'INSERT INTO accept(userID, guildID, channelID) VALUES (?, ?, ?)',
+				userID,
+				self.guildID,
+				channelID
+			)
+		else:
+			return False
+		self.db.save()
+		return True
+
+	def checkAccept(self, userID: int):
+		"""
+		Returns True if accept exist, else False
+		:param userID:
+		:return:
+		"""
+		check = self.db.makeRequest(
+			'SELECT * FROM accept WHERE userID = ? AND guildID = ?',
+			userID,
+			self.guildID
+		)
+		if len(check) > 0:
+			returnCheck = True
+		else:
+			returnCheck = False
+
+		return returnCheck
+
+	def delAccept(self, userID: int):
+		"""
+		Deletes accept
+		:param userID:
+		:return:
+		"""
+		check = self.checkAccept(userID)
+		if check:
+			delete = self.db.makeRequest(
+				"DELETE FROM accept WHERE userID = ? AND guildID = ?",
+				userID,
+				self.guildID
+			)
+		else:
+			return False
+		self.db.save()
+		return True
+
+	def getAccept(self, userID: int):
+		"""
+		returns an accept request
+		:param userID:
+		:return:
+		"""
+		requests = self.db.makeRequest(
+			'SELECT * FROM accept WHERE userID = ? AND guildID = ?',
+			userID,
+			self.guildID
+		)
+		if len(requests) > 0:
+			returnRequest = requests[0]
+		else:
+			returnRequest = False
+
+		return returnRequest

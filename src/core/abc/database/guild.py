@@ -122,37 +122,3 @@ class AbstractGuild(metaclass=ABCMeta):
 		:param userStats:
 		:return:
 		"""
-
-	@abstractmethod
-	def makeAccept(self, userID: int, channelID: str):
-		"""
-		Make an accept action
-		:param channelID:
-		:param userID:
-		:return:
-		"""
-
-	@abstractmethod
-	def checkAccept(self, userID: int, guildID: str):
-		"""
-		Returns True if accept exist, else False
-		:param userID:
-		:param guildID:
-		:return:
-		"""
-
-	@abstractmethod
-	def delAccept(self, userID: int):
-		"""
-		Deletes accept
-		:param userID:
-		:return:
-		"""
-
-	@abstractmethod
-	def getAccept(self, userID: int):
-		"""
-		returns an accept request
-		:param userID:
-		:return:
-		"""
