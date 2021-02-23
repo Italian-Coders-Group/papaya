@@ -28,7 +28,6 @@ class Bot:
 		self.database = Database()
 		modules.initializeGames()
 
-
 	def run( self, token: str ):
 		""" Run the bot, its a blocking call """
 		self.client.run(token)
@@ -43,8 +42,10 @@ class Bot:
 		Called when a message arrives
 		:param msg: the discord.Message obj
 		"""
-		if (msg.author.id == 485434957129580545) or (msg.author.id == 781540733173366794):
+
+		if msg.author.bot:
 			return
+
 		from discord import TextChannel
 		from discord import Guild
 		msg.channel: TextChannel
