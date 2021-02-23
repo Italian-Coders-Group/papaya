@@ -154,8 +154,8 @@ class Game(BaseGame):
         }
         return data
 
-    def parseData(self, data: PapGame):
-        gameData = data.gameData
+    def parseData(self, data: dict):
+        gameData: PapGame = data.gameData
         print(gameData)
         self.player1 = Player(gameData["player1ID"], Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/x.png"), "x")
         if gameData["player2ID"] == "AI":
@@ -180,5 +180,4 @@ class Game(BaseGame):
     
     Non so ancora come verrà fatta ma vorrei cominciare a sviluppare il gioco con un "linguaggio" che anche la IA 
     potrà usare, così non dobbiamo usare metodi diversi se sta giocando la IA o un altro player
-    
     """
