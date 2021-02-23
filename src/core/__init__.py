@@ -43,6 +43,8 @@ class Bot:
 		Called when a message arrives
 		:param msg: the discord.Message obj
 		"""
+		if (msg.author.id == 485434957129580545) or (msg.author.id == 781540733173366794):
+			return
 		from discord import TextChannel
 		from discord import Guild
 		msg.channel: TextChannel
