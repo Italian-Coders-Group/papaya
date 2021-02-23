@@ -66,6 +66,16 @@ class SqlBackend(AbstractBackend):
             )
             '''
 		)
+		self.cursor.execute(
+			'''
+            CREATE TABLE IF NOT EXISTS accept (
+                userID text NOT NULL,
+                guildID int NOT NULL,
+                channelID int not null,
+                CONSTRAINT PK_accept PRIMARY KEY (userID, guildID)
+            )
+            '''
+		)
 
 	def save( self ) -> None:
 		"""	Commit changes to the database file	"""
