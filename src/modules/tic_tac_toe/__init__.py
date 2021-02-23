@@ -16,26 +16,56 @@ from core import utils
 
 @Command
 async def ttt(server: AbstractServer, msg: Message):
-    pvp = True
-    if not msg.mentions or msg.mentions[0].id in [781540733173366794, 485434957129580545]:
-        await msg.channel.send("You are going to play against our AI.")
-        pvp = False
-    player1 = msg.author
-    player2 = msg.mentions[0] if pvp else None
-    newGame = Game(player1=player1, player2=player2)
+    engaged = False
+    gameChek = server.GetDatabase().getLiveGameForUser(msg.author.id) or server.GetDatabase().getLiveGameForUser(
+        msg.mentions[0].id) if \
+        msg.mentions else False
+    # mentionCheck = server.GetDatabase().getLiveGameForUser(msg.mentions[0].id)
+    acceptCheck = server.GetDatabase().checkAccept(msg.author.id) or server.GetDatabase().checkAccept(msg.mentions[
+                                                                                                          0].id) if \
+        msg.mentions else False
 
-    server.GetDatabase().setGame(
-        PapGame(
-            gameUtils.getRandomGameID([player1.id, player2.id if pvp else 0]),
-            "tic tac toe",
-            [msg.author.id, msg.mentions[0].id] if pvp else [msg.author.id, "AI"],
-            newGame.getData(),
-            True
+    if gameChek or acceptCheck:
+        engaged = True
+
+    if not engaged:
+        pvp = True
+        if not msg.mentions or msg.mentions[0].id in [781540733173366794, 485434957129580545]:
+            pvp = False
+            await msg.channel.send("You are going to play against our AI.")
+            player1 = msg.author
+            player2 = None
+            newGame = Game(player1=player1, player2=player2)
+            server.GetDatabase().setGame(
+                PapGame(
+                    gameUtils.getRandomGameID([player1.id, player2.id if pvp else 0]),
+                    "tic tac toe",
+                    [msg.author.id, msg.mentions[0].id] if pvp else [msg.author.id, 0],
+                    newGame.getData(),
+                    True
+                )
+            )
+        if pvp:
+            accept = server.GetDatabase().makeAccept(msg.mentions[0].id, msg.channel.id)
+            if accept:
+                await msg.channel.send(f"Please wait until {msg.mentions[0]} accepts the game.")
+            else:
+                await msg.channel.send(f"There was a problem with the accept")
+        player1 = msg.author
+        player2 = msg.mentions[0] if pvp else None
+        newGame = Game(player1=player1, player2=player2)
+
+        server.GetDatabase().setGame(
+            PapGame(
+                gameUtils.getRandomGameID([player1.id, player2.id if pvp else 0]),
+                "tic tac toe",
+                [msg.author.id, msg.mentions[0].id] if pvp else [msg.author.id, "AI"],
+                newGame.getData(),
+                False
+            )
         )
-    )
-
-    await msg.channel.send(embed=embed("New Game", f"This game is between {newGame.player1.getUser()} and "
-                                                   f"{newGame.player2.getUser()}", getColor("255,0,0")))
+    else:
+        await msg.channel.send("Game cannot be made, someone is already engaged in another game or has an invitation")
 
 
 @Command
