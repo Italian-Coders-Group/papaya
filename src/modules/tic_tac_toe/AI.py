@@ -42,7 +42,8 @@ class AI:
         self.symbol = symbol
         self.simpleBoard = []
 
-    def getUser(self):
+    @staticmethod
+    def getUser():
         return "AI"
 
     def get_board_status(self, board):
