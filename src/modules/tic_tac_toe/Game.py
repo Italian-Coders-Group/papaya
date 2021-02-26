@@ -1,6 +1,7 @@
 import discord
 from .Player import Player
 from .AI import AI
+from random import choice
 from itertools import cycle
 from games.abc.baseGame import BaseGame
 import io
@@ -70,6 +71,36 @@ def get_coords(inputValue: str):
             return possible_coords[key]
 
 
+def from1Dto2D(move: int):
+    table = {
+        '1': (0, 0),
+        '2': (0, 1),
+        '3': (0, 2),
+        '4': (1, 0),
+        '5': (1, 1),
+        '6': (1, 2),
+        '7': (2, 0),
+        '8': (2, 1),
+        '9': (2, 2)
+    }
+    return table[str(move)]
+
+
+def from2Dto1D(pos: tuple):
+    positions = {
+        (0, 0): '1',
+        (0, 1): '2',
+        (0, 2): '3',
+        (1, 0): '4',
+        (1, 1): '5',
+        (1, 2): '6',
+        (2, 0): '7',
+        (2, 1): '8',
+        (2, 2): '9'
+    }
+    return positions[pos]
+
+
 class Game(BaseGame):
 
     def __init__(self, player1: discord.Member = None, player2: discord.Member = None, data: dict = None):
@@ -89,7 +120,6 @@ class Game(BaseGame):
             self.parseData(data)
 
         self.players = cycle([self.player1, self.player2])
-        print(f"Initial grid {self.grid}")
 
     def compile_image(self):
         buffer = io.BytesIO()
@@ -109,15 +139,14 @@ class Game(BaseGame):
         for i, row in enumerate(self.grid):
             for j, cell in enumerate(row):
 
-                if cell == 'x':
+                if cell == "x":
                     base_grid.paste(x, (i * spacer, j * spacer), x)
                     print(f"Cell [{i}][{j}] is X")
 
-                if cell == 'o':
+                if cell == "o":
                     base_grid.paste(o, (i * spacer, j * spacer), o)
                     print(f"Cell [{i}][{j}] is O")
 
-        print(f"Latest Grid: {self.grid}")
         base_grid.save(buffer, format="PNG")
         buffer.seek(0)
         return buffer
@@ -125,22 +154,100 @@ class Game(BaseGame):
     def makeMove(self, pos):
         old_board = self.compile_image()
         posX, posY = get_coords(pos)
+        tied = False
+        v = []
         if self.grid[posY][posX] == "":
             self.grid[posY][posX] = self.turn.sign
         else:
             return old_board, 3
+        print(self.grid)
+
+        for row in self.grid:
+            for cell in row:
+                if cell == '':
+                    v.append(cell)
+
+        if len(v) == 0:
+            tied = True
+
+        if tied:
+            new_board = self.compile_image()
+            return new_board, 100
+
+        print(self.turn.sign)
         hasWon = check_for_win(self.grid, self.turn.sign)
-        new_board = self.compile_image()
+        print(hasWon)
         if not hasWon:
-            self.processTurn()
+            self.turn = self.player2
+            if self.turn.user == "AI":
+                print("AIOOO NO SHIT ITS MY TURN")
+                y, x = self.compMove()
+
+                self.grid[y][x] = self.turn.sign
+                new_board = self.compile_image()
+                aiWon = check_for_win(self.grid, "o")
+                if aiWon:
+                    code = 10
+                else:
+                    self.turn = self.player1
+                    code = 0
+            return new_board, code
             code = 0
         else:
             code = 1
-
+        new_board = self.compile_image()
         return new_board, code
 
+    def compMove(self):
+        possibleMoves = []
+        for i, row in enumerate(self.grid):
+            for j, cell in enumerate(row):
+                if cell == '':
+                    possibleMoves.append(from2Dto1D((i, j)))
+        move = 0
+
+        # Check for possible winning move to take or to block opponents winning move
+        for sign in ['o', 'x']:
+            for possibleMove in possibleMoves:
+                boardCopy = [[],
+                             [],
+                             []]
+                for y, row in enumerate(self.grid):
+                    for x, cell in enumerate(row):
+                        boardCopy[y].append(cell)
+                posY, posX = from1Dto2D(possibleMove)
+                boardCopy[posY][posX] = sign
+                if check_for_win(boardCopy, sign):
+                    move = possibleMove
+                    return from1Dto2D(move)
+
+        # Try to take one of the corners
+        cornersOpen = []
+        for i in possibleMoves:
+            if i in ['1', '3', '7', '9']:
+                cornersOpen.append(i)
+        if len(cornersOpen) > 0:
+            move = choice(cornersOpen)
+            return from1Dto2D(move)
+
+        # Try to take the center
+        if 5 in possibleMoves:
+            move = 5
+            return from1Dto2D(move)
+
+        # Take any edge
+        edgesOpen = []
+        for i in possibleMoves:
+            if i in ['2', '4', '6', '8']:
+                edgesOpen.append(i)
+
+        if len(edgesOpen) > 0:
+            move = choice(edgesOpen)
+
+        return from1Dto2D(move)
+
     def processTurn(self):
-        return next(self.players)
+        self.turn = next(self.players)
 
     def get_vs(self):
         return f"{self.player1} vs {self.player2}"
@@ -158,7 +265,7 @@ class Game(BaseGame):
         gameData: PapGame = data.gameData
         print(gameData)
         self.player1 = Player(gameData["player1ID"], Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/x.png"), "x")
-        if gameData["player2ID"] == "AI":
+        if gameData["player2ID"] == 0:
             self.player2 = AI(Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/o.png"), "o")
         else:
             self.player2 = Player(gameData["player2ID"], Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/o.png"),

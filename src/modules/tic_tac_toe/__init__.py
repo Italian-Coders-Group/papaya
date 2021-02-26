@@ -30,40 +30,48 @@ async def ttt(server: AbstractServer, msg: Message):
 
     if not engaged:
         pvp = True
-        if not msg.mentions or msg.mentions[0].id in [781540733173366794, 485434957129580545]:
+        if (not msg.mentions) or (msg.mentions[0].id in [781540733173366794, 485434957129580545]):
             pvp = False
-            await msg.channel.send("You are going to play against our AI.")
+
+            tttEmbed = embed(
+                title="New tic tac toe Game.",
+                content=f"This game is between {msg.author} and our AI",
+                color=getColor(random=True)
+            )
+
+            await msg.channel.send(embed=tttEmbed)
             player1 = msg.author
             player2 = None
             newGame = Game(player1=player1, player2=player2)
             server.GetDatabase().setGame(
                 PapGame(
-                    gameUtils.getRandomGameID([player1.id, player2.id if pvp else 0]),
+                    gameUtils.getRandomGameID([player1.id, 0]),
                     "tic tac toe",
-                    [msg.author.id, msg.mentions[0].id] if pvp else [msg.author.id, 0],
+                    [msg.author.id, 0],
                     newGame.getData(),
                     True
                 )
             )
         if pvp:
             accept = server.GetDatabase().makeAccept(msg.mentions[0].id, msg.channel.id)
+            player1 = msg.author
+            player2 = msg.mentions[0]
+            newGame = Game(player1=player1, player2=player2)
+
+            server.GetDatabase().setGame(
+                PapGame(
+                    gameUtils.getRandomGameID([player1.id, player2.id]),
+                    "tic tac toe",
+                    [msg.author.id, msg.mentions[0].id],
+                    newGame.getData(),
+                    False
+                )
+            )
             if accept:
                 await msg.channel.send(f"Please wait until {msg.mentions[0]} accepts the game.")
             else:
                 await msg.channel.send(f"There was a problem with the accept")
-        player1 = msg.author
-        player2 = msg.mentions[0] if pvp else None
-        newGame = Game(player1=player1, player2=player2)
 
-        server.GetDatabase().setGame(
-            PapGame(
-                gameUtils.getRandomGameID([player1.id, player2.id if pvp else 0]),
-                "tic tac toe",
-                [msg.author.id, msg.mentions[0].id] if pvp else [msg.author.id, "AI"],
-                newGame.getData(),
-                False
-            )
-        )
     else:
         await msg.channel.send("Game cannot be made, someone is already engaged in another game or has an invitation")
 
@@ -71,7 +79,7 @@ async def ttt(server: AbstractServer, msg: Message):
 @Command
 async def draw(server: AbstractServer, msg: Message):
 
-    gameData = server.GetDatabase().getLiveGameForUser(msg.author.id)
+    gameData = server.GetDatabase().getLiveGameForUser(userID=msg.author.id, gameType="tic tac toe")
 
     still_live = True
 
@@ -95,12 +103,18 @@ async def draw(server: AbstractServer, msg: Message):
         if code == 1:
             await msg.channel.send(f"Congrats {msg.author.mention} you won")
             still_live = False
+        if code == 10:
+            await msg.channel.send("Sorry but our AI WON, ggs")
+            still_live = False
+        if code == 100:
+            await msg.channel.send("This is a tie")
+            still_live = False
 
     server.GetDatabase().setGame(
         PapGame(
             gameData[0].gameID,
             gameData[0].gameType,
-            gameData[0].userIDs,
+            [x for x in gameData[0].userIDs],
             resumeGame.getData(),
             still_live
         )
@@ -131,9 +145,8 @@ async def testbase(server: AbstractServer, msg: Message):
 
 @Command
 async def grid(server: AbstractServer, msg: Message):
-    games = [["x", "o", "x"], ["x", "x", "o"], ["x", "o", "x"]]
-    testAI = AI("x", "x")
-    test = testAI.get_board_status(games)
+    games = [['x', 'x', 'o'], ['o', 'x', 'x'], ['x', 'o', 'o']]
+    test = check_for_win(games, 'x')
 
     print(test)
 
