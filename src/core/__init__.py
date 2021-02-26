@@ -8,6 +8,7 @@ from . import server
 from . import utils
 from .logging import get_logger
 from .dataclass import PapGame
+from .utils import embed, getColor
 import modules
 
 logger = get_logger( 'BOT' )
@@ -102,7 +103,12 @@ class Bot:
 		if acceptList:
 			if delAccept:
 				if accepted:
-					await msg.channel.send(f"Prepare, {msg.author} accepted the game")
+					acceptedEmbed = embed(
+						title="Game accepted. Prepare",
+						content=f"This game is between {msg.author.mention} and his opponent TODO: get actual names, ty",
+						color=getColor(RGB="0,255,0")
+					)
+					await msg.channel.send(embed=acceptedEmbed)
 					game = self.database.getGuild(msg.guild.id).getGamesForUser(msg.author.id)[0]
 					self.database.getGuild(msg.guild.id).setGame(
 						PapGame(
@@ -114,4 +120,9 @@ class Bot:
 						)
 					)
 				else:
-					await msg.channel.send(f"Sorry, {msg.author} denied the , the game is not live")
+					deniedEmbed = embed(
+						title="Game denied.",
+						content="This game is cancelled.",
+						color=getColor(RGB="255,0,0")
+					)
+					await msg.channel.send(embed=deniedEmbed)

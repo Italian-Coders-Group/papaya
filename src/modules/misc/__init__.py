@@ -62,7 +62,7 @@ async def category(server: AbstractServer, msg: Message):
     listEmbed = embed(
         title="Categories",
         content="\n".join(gameType for gameType in allGameTypes),
-        color=getColor("255, 0, 0")
+        color=getColor(RGB="255, 0, 0")
     )
     listEmbed.set_thumbnail(url="https://lh3.googleusercontent.com/proxy/iGs72HNJCfm445aBtT8dxVquNExB5imv0ynMdO_QrdDOpo"
                     "-kZaUmQ9_2Dp81W56uTZCOFuVTmnsd-SXtj6essFtzN7aXrnil_TfFpk_jqYwVQNLxWFGfKZCF59JC0A"
