@@ -148,6 +148,10 @@ class Game(BaseGame):
                     print(f"Cell [{i}][{j}] is O")
 
         base_grid.save(buffer, format="PNG")
+        base_grid.save(f"/var/www/papaya/papayabot/games/imagesToSend/{self.gameID}.png", format="PNG")
+        # /var/www/papaya/papayabot/games/imagesToSend -> path on remote
+        # {os.getcwd()}/modules/tic_tac_toe/src/imagesToSend -> path on windows
+
         buffer.seek(0)
         return buffer
 
@@ -160,7 +164,6 @@ class Game(BaseGame):
             self.grid[posY][posX] = self.turn.sign
         else:
             return old_board, 3
-        print(self.grid)
 
         for row in self.grid:
             for cell in row:
@@ -174,13 +177,10 @@ class Game(BaseGame):
             new_board = self.compile_image()
             return new_board, 100
 
-        print(self.turn.sign)
         hasWon = check_for_win(self.grid, self.turn.sign)
-        print(hasWon)
         if not hasWon:
             self.turn = self.player2
             if self.turn.user == "AI":
-                print("AIOOO NO SHIT ITS MY TURN")
                 y, x = self.compMove()
 
                 self.grid[y][x] = self.turn.sign
@@ -263,7 +263,8 @@ class Game(BaseGame):
 
     def parseData(self, data: dict):
         gameData: PapGame = data.gameData
-        print(gameData)
+        gameID: PapGame = data.gameID
+        self.gameID = gameID
         self.player1 = Player(gameData["player1ID"], Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/x.png"), "x")
         if gameData["player2ID"] == 0:
             self.player2 = AI(Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/o.png"), "o")

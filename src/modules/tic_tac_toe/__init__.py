@@ -88,6 +88,7 @@ async def draw(server: AbstractServer, msg: Message):
         return
 
     resumeGame = Game(data=gameData[0])
+    resumeGameID = gameData[0].gameID
 
     if resumeGame.turn.user != msg.author.id:
         await msg.channel.send("Ehi bud it's not your turn yet")
@@ -109,6 +110,14 @@ async def draw(server: AbstractServer, msg: Message):
         if code == 100:
             await msg.channel.send("This is a tie")
             still_live = False
+
+        drawEmbed = embed(
+            title="Tic Tac Toe",
+            content="X: Player1 \tO: Player2",
+            color=getColor(random=True)
+        )
+        drawEmbed.set_image(url=f"https://papayabot.xyz/papayabot/games/imagesToSend/{resumeGameID}.png")
+        await msg.channel.send(embed=drawEmbed)
 
     server.GetDatabase().setGame(
         PapGame(
