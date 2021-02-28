@@ -111,13 +111,13 @@ async def draw(server: AbstractServer, msg: Message):
             await msg.channel.send("This is a tie")
             still_live = False
 
-        drawEmbed = embed(
-            title="Tic Tac Toe",
-            content="X: Player1 \tO: Player2",
-            color=getColor(random=True)
-        )
-        drawEmbed.set_image(url=f"https://papayabot.xyz/papayabot/games/imagesToSend/{resumeGameID}.png")
-        await msg.channel.send(embed=drawEmbed)
+        # drawEmbed = embed(
+        #     title="Tic Tac Toe",
+        #     content="X: Player1 \tO: Player2",
+        #     color=getColor(random=True)
+        # )
+        # drawEmbed.set_image(url=f"https://papayabot.xyz/papayabot/games/imagesToSend/{resumeGameID}.png")
+        # await msg.channel.send(embed=drawEmbed)
 
     server.GetDatabase().setGame(
         PapGame(
