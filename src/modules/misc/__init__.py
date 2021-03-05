@@ -66,3 +66,37 @@ async def category(server: AbstractServer, msg: Message):
     )
     listEmbed.set_thumbnail(url="https://lh3.googleusercontent.com/proxy/iGs72HNJCfm445aBtT8dxVquNExB5imv0ynMdO_QrdDOpo-kZaUmQ9_2Dp81W56uTZCOFuVTmnsd-SXtj6essFtzN7aXrnil_TfFpk_jqYwVQNLxWFGfKZCF59JC0A-5_p0kLF5_M4HxBioZpQ")
     await msg.channel.send(embed=listEmbed)
+
+
+@Command
+async def surrender(server: AbstractServer, msg: Message):
+    resumeGame = server.GetDatabase().getLiveGameForUser(msg.author.id)[0]
+
+    server.GetDatabase().setGame(
+        PapGame(
+            gameID=resumeGame.gameID,
+            gameType=resumeGame.gameType,
+            gameData=resumeGame.gameData,
+            userIDs=resumeGame.userIDs,
+            live=False
+        )
+    )
+    for userId in resumeGame.userIDs:
+        if userId == msg.author.id:
+            server.GetDatabase().saveStatsForUserInGuild(userID=userId, loss=True)
+        else:
+            server.GetDatabase().saveStatsForUserInGuild(userID=userId, win=True)
+
+    await msg.channel.send("You surrendered the game. Stats are updated.")
+
+    pass
+
+
+@Command
+async def cancel(server: AbstractServer, msg: Message):
+    hasAccept = server.GetDatabase().checkAccept(msg.author.id)
+    if not hasAccept:
+        await msg.channel.send("You have no games to accept")
+    else:
+        server.GetDatabase().delAccept(msg.author.id)
+        await msg.channel.send("Your game has been cancelled.")
