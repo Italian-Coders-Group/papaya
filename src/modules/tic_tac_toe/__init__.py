@@ -89,6 +89,7 @@ async def draw(server: AbstractServer, msg: Message):
 
     resumeGame = Game(data=gameData[0])
     resumeGameID = gameData[0].gameID
+    userIDs = gameData[0].userIDs
 
     if resumeGame.turn.user != msg.author.id:
         await msg.channel.send("Ehi bud it's not your turn yet")
@@ -96,38 +97,47 @@ async def draw(server: AbstractServer, msg: Message):
         params = msg.content.split()
         pos = params[1]
         newState, code = resumeGame.makeMove(pos)
-        await msg.channel.send(file=File(newState, "game.png"))
+        # await msg.channel.send(file=File(newState, f"{resumeGameID}.png"))
         if code == 3:
             await msg.channel.send("That position is invalid, try again")
-        if code == 0:
+        elif code == 0:
             await msg.channel.send("The game is still going on")
-        if code == 1:
+        elif code == 1:
             await msg.channel.send(f"Congrats {msg.author.mention} you won")
+            for userid in userIDs:
+                if userid == msg.channel.id:
+                    server.GetDatabase().saveStatsForUserInGuild(userID=userid, win=True)
+                else:
+                    server.GetDatabase().saveStatsForUserInGuild(userID=userid, loss=True)
             still_live = False
-        if code == 10:
-            await msg.channel.send("Sorry but our AI WON, ggs")
+        elif code == 10:
+            await msg.channel.send("Sorry but you lost and our AI WON, ggs")
+            server.GetDatabase().saveStatsForUserInGuild(userID=msg.author.id, loss=True)
             still_live = False
-        if code == 100:
+        elif code == 100:
             await msg.channel.send("This is a tie")
+            for userid in userid:
+                server.GetDatabase().saveStatsForUserInGuild(userID=userid, tie=True)
             still_live = False
 
-        # drawEmbed = embed(
-        #     title="Tic Tac Toe",
-        #     content="X: Player1 \tO: Player2",
-        #     color=getColor(random=True)
-        # )
-        # drawEmbed.set_image(url=f"https://papayabot.xyz/papayabot/games/imagesToSend/{resumeGameID}.png")
-        # await msg.channel.send(embed=drawEmbed)
-
-    server.GetDatabase().setGame(
-        PapGame(
-            gameData[0].gameID,
-            gameData[0].gameType,
-            [x for x in gameData[0].userIDs],
-            resumeGame.getData(),
-            still_live
+        drawEmbed = embed(
+            title="Tic Tac Toe",
+            content="X: Player1 \tO: Player2",
+            color=getColor(random=True)
         )
-    )
+        drawEmbed.set_image(url=f"https://papayabot.xyz/papayabot/games/imagesToSend/{resumeGameID}.png?bot=papaya")
+        drawEmbed.add_field(name="game_status", value="TestMessage", inline=False)
+        await msg.channel.send(embed=drawEmbed)
+
+        server.GetDatabase().setGame(
+            PapGame(
+                gameData[0].gameID,
+                gameData[0].gameType,
+                [x for x in gameData[0].userIDs],
+                resumeGame.getData(),
+                still_live
+            )
+        )
 
 
 @Command
