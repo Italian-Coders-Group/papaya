@@ -43,7 +43,7 @@ class SqlBackend(AbstractBackend):
                 userID TEXT NOT NULL,
                 gameType TEXT NOT NULL,
                 wins INT NOT NULL DEFAULT 0,
-                loses INT NOT NULL DEFAULT 0,
+                losses INT NOT NULL DEFAULT 0,
                 ties INT NOT NULL DEFAULT 0,
                 CONSTRAINT PK_stats PRIMARY KEY (guildID, userID, gameType)
             )
@@ -70,9 +70,10 @@ class SqlBackend(AbstractBackend):
 			'''
             CREATE TABLE IF NOT EXISTS accept (
                 userID text NOT NULL,
+                user2ID text NOT NULL,
                 guildID int NOT NULL,
                 channelID int not null,
-                CONSTRAINT PK_accept PRIMARY KEY (userID, guildID)
+                CONSTRAINT PK_accept PRIMARY KEY (userID, user2ID, guildID)
             )
             '''
 		)
