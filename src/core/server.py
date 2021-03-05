@@ -20,7 +20,7 @@ async def DefCommand( server: AbstractServer, msg: discord.Message ) -> int:
 class Server( AbstractServer ):
 
 	guild: discord.Guild
-	prefix: str = '€'
+	prefix: str = '*'
 	roleRules: Dict[ str, object ]
 	commands: core.commandList.CommandList
 	logger: logging.Logger
