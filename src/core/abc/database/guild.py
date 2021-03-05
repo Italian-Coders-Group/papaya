@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import List, Optional
 
 from core.abc.database.database import AbstractDatabase
-from core.dataclass import PapGame, PapUser, PapStats
+from core.dataclass import PapGame, PapUser
 
 
 class AbstractGuild(metaclass=ABCMeta):
@@ -60,21 +60,6 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 		pass
 
-	def hasGametype(self, gameType: str) -> list:
-		"""
-		Returns True if game type exist else False
-		:param gameType:
-		:return:
-		"""
-		pass
-
-	def getGametypes(self) -> list:
-		"""
-		Returns a list of Available categories
-		:return:
-		"""
-		pass
-
 	@abstractmethod
 	def getGamesForUser( self, userID: int, gameType: str = 'any', user: Optional[PapUser] = None ) -> List[PapGame]:
 		"""
@@ -97,29 +82,3 @@ class AbstractGuild(metaclass=ABCMeta):
 		:return: list of games
 		"""
 		pass
-
-	@abstractmethod
-	def getStatsForUserInGuild(self, userID: int, gameType: str = 'any') -> PapStats:
-		"""
-		Returns a user in the guild with his stats, None if not found
-		:param userID:
-		:param gameType:
-		:return: user
-		"""
-
-	@abstractmethod
-	def getRankForUserInGame(self, userId: int, gameType: str) -> str:
-		"""
-		Returns the string for the rank in a specified guild
-		:param userId:
-		:param gameType:
-		:return:
-		"""
-
-	@abstractmethod
-	def calculateRankForUserStats(self, userStats: list) -> int:
-		"""
-		Calculates the rank for single gameType. Returns None if gametype is any
-		:param userStats:
-		:return:
-		"""
