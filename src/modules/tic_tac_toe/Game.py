@@ -8,7 +8,6 @@ import os
 from PIL import Image, ImageDraw
 from .Grid import Grid
 from core import utils
-from core.dataclass import PapGame
 # from core.database import get_game_id
 
 
@@ -53,7 +52,6 @@ def get_coords(inputValue: str):
         "mr": (1, 2),
         "middleright": (1, 2),
         "midright": (1, 2),
-        "23": (1, 2),
         "bl": (2, 0),
         "bottomleft": (2, 0),
         "31": (2, 0),
@@ -72,27 +70,25 @@ def get_coords(inputValue: str):
 
 class Game(BaseGame):
 
-    def __init__(self, player1: discord.Member = None, player2: discord.Member = None, data: dict = None):
+    def __init__(self, player1: discord.Member, player2: discord.Member = None):
         """
-        Cheks if the game is new or loaded from DB
+        A ogni game verrà associato un ID automatico, ma forse questo è meglio farlo in BaseGame (non ne ho idea)
 
-        Creates a new game if no data is passed, otherwise it parses the data provided.
+        Che contiene:
+
+        Guild_ID | Game_ID | Player1 | Player 2 | Result (campo riempito solo alla fine del game)
         """
-
-        if data is None:
-            self.player1 = Player(player1.id, Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\x.png"), "x")
-            self.player2 = Player(player2.id, Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"),
-                                  "o") if player2 is not None else AI(Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
-            self.grid = [['', '', ''], ['', '', ''], ['', '', '']]
-            self.turn = self.player2 if self.player2.user != "AI" else self.player1
-        else:
-            self.parseData(data)
-
+        self.buffer = io.BytesIO()
+        self.player1 = Player(player1, Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\x.png"), "x")
+        self.player2 = Player(player2, Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"),
+                              "o") if player2 is not None else AI(Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
         self.players = cycle([self.player1, self.player2])
-        print(f"Initial grid {self.grid}")
+        self.turn = self.processTurn()
+        self.grid = Grid(3, 3)
+        print(f"Initial grid {self.grid.grid}")
 
     def compile_image(self):
-        buffer = io.BytesIO()
+        self.buffer.seek(0)
 
         base_grid = Image.new("RGB", (156, 156), (255, 255, 255))
         draw = ImageDraw.Draw(base_grid)
@@ -106,7 +102,7 @@ class Game(BaseGame):
         o = self.player2.symbol
         spacer = 53
 
-        for i, row in enumerate(self.grid):
+        for i, row in enumerate(self.grid.grid):
             for j, cell in enumerate(row):
 
                 if cell == 'x':
@@ -117,22 +113,22 @@ class Game(BaseGame):
                     base_grid.paste(o, (i * spacer, j * spacer), o)
                     print(f"Cell [{i}][{j}] is O")
 
-        print(f"Latest Grid: {self.grid}")
-        base_grid.save(buffer, format="PNG")
-        buffer.seek(0)
-        return buffer
+        print(f"Latest Grid: {self.grid.grid}")
+        base_grid.save(self.buffer, format="PNG")
+        self.buffer.seek(0)
+        return self.buffer
 
     def makeMove(self, pos):
         old_board = self.compile_image()
         posX, posY = get_coords(pos)
-        if self.grid[posY][posX] == "":
-            self.grid[posY][posX] = self.turn.sign
+        if self.grid.grid[posY][posX] == "":
+            self.grid.grid[posY][posX] = self.turn.sign
         else:
             return old_board, 3
-        hasWon = check_for_win(self.grid, self.turn.sign)
+        hasWon = check_for_win(self.grid.grid, self.turn.sign)
         new_board = self.compile_image()
         if not hasWon:
-            self.processTurn()
+            self.turn = self.processTurn()
             code = 0
         else:
             code = 1
@@ -144,33 +140,6 @@ class Game(BaseGame):
 
     def get_vs(self):
         return f"{self.player1} vs {self.player2}"
-
-    def getData(self):
-        data = {
-            "player1ID": self.player1.user,
-            "player2ID": self.player2.user,
-            "currentTurn": self.turn.user,
-            "grid": self.grid
-        }
-        return data
-
-    def parseData(self, data: PapGame):
-        gameData = data.gameData
-        print(gameData)
-        self.player1 = Player(gameData["player1ID"], Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\x.png"), "x")
-        if gameData["player2ID"] == "AI":
-            self.player2 = AI(Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
-        else:
-            self.player2 = Player(gameData["player2ID"], Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
-
-        if gameData["currentTurn"] == gameData["player1ID"]:
-            self.turn = Player(gameData["player1ID"], Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\x.png"), "x")
-        else:
-            self.turn = Player(gameData["player2ID"], Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
-        # else:
-        #     self.turn = AI(Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
-
-        self.grid = gameData["grid"]
 
     """
     Questi sono test per una specie di "traduzione" tra IA e PIL.

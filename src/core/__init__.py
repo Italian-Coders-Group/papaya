@@ -7,6 +7,8 @@ from .database.database import Database
 from . import server
 from . import utils
 from .logging import get_logger
+from .dataclass import PapGame
+from .utils import embed, getColor
 import modules
 
 logger = get_logger( 'BOT' )
@@ -41,6 +43,10 @@ class Bot:
 		Called when a message arrives
 		:param msg: the discord.Message obj
 		"""
+
+		if msg.author.bot:
+			return
+
 		from discord import TextChannel
 		from discord import Guild
 		msg.channel: TextChannel
@@ -81,3 +87,42 @@ class Bot:
 		else:
 			# call the right handler for the server
 			await self.servers[ msg.guild.id ].handleMsg( msg )
+		acceptList = self.database.getGuild(msg.guild.id).getAccept(msg.author.id)
+		delAccept = False
+		if not acceptList:
+			pass
+		elif (acceptList[2] == msg.channel.id) and ("accept" in msg.content):
+			delAccept = self.database.getGuild(msg.guild.id).delAccept(msg.author.id)
+			accepted = True
+		elif (acceptList[2] == msg.channel.id) and ("deny" in msg.content):
+			delAccept = self.database.getGuild(msg.guild.id).delAccept(msg.author.id)
+			accepted = False
+		else:
+			pass
+
+		if acceptList:
+			if delAccept:
+				if accepted:
+					acceptedEmbed = embed(
+						title="Game accepted. Prepare",
+						content=f"This game is between {msg.author.mention} and his opponent TODO: get actual names, ty",
+						color=getColor(RGB="0,255,0")
+					)
+					await msg.channel.send(embed=acceptedEmbed)
+					game = self.database.getGuild(msg.guild.id).getGamesForUser(msg.author.id)[0]
+					self.database.getGuild(msg.guild.id).setGame(
+						PapGame(
+							gameID=game.gameID,
+							gameType=game.gameType,
+							userIDs=game.userIDs,
+							gameData=game.gameData,
+							live=True
+						)
+					)
+				else:
+					deniedEmbed = embed(
+						title="Game denied.",
+						content="This game is cancelled.",
+						color=getColor(RGB="255,0,0")
+					)
+					await msg.channel.send(embed=deniedEmbed)

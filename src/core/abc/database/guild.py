@@ -81,13 +81,3 @@ class AbstractGuild(metaclass=ABCMeta):
 		:return: list of games
 		"""
 		pass
-
-	@abstractmethod
-	def getStatsForUserInGuild(self, userID: int, guildID: str, gameType: str = 'any') -> PapUser:
-		"""
-		Returns a user in the guild with his stats, None if not found
-		:param userID:
-		:param guildID:
-		:param gameType:
-		:return: user
-		"""

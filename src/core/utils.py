@@ -1,9 +1,25 @@
 import math
 import traceback
 from typing import Any, List, Union, KeysView, ItemsView, Tuple, Callable
+from random import choice
 
 import discord
 from discord import Embed, Color
+
+
+def color_palette():
+	"""
+	Returns a random color from a Papaya fruit palette.
+	:return: Random str("r,g,b") from papaya fruit palette
+	"""
+	colors = [
+		"246,125,35",
+		"253,150,58",
+		"255,168,62",
+		"186,163,49",
+		"160,157,51"
+	]
+	return choice(colors)
 
 
 def getAuthors() -> Callable[[], Tuple[int, int]]:
@@ -30,17 +46,26 @@ def embed(title: str, content: str, color: Color) -> Embed:
 	return data
 
 
-def getColor(RGB: str) -> Color:
+def getColor(RGB: str = "255, 255, 255", random: bool = False) -> Color:
 	"""
 	Converts a string of R,G,B values to a discord Color object
+	:param random:
 	:param RGB: the color
 	:return: color obj
 	"""
-	rgb = RGB.split(',')
+
+	if random:
+		rgb = color_palette().split(',')
+
+	else:
+		rgb = RGB.split(',')
+
 	r: int = int( rgb[0] )
 	g: int = int( rgb[1] )
 	b: int = int( rgb[2] )
-	return discord.colour.Color.from_rgb(r, g, b)
+	returnColor = discord.colour.Color.from_rgb(r, g, b)
+
+	return returnColor
 
 
 def getTracebackEmbed( exc: Exception ) -> Embed:

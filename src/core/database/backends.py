@@ -45,7 +45,7 @@ class SqlBackend(AbstractBackend):
                 wins INT NOT NULL DEFAULT 0,
                 loses INT NOT NULL DEFAULT 0,
                 ties INT NOT NULL DEFAULT 0,
-                CONSTRAINT PK_stats PRIMARY KEY (guildID, userID)
+                CONSTRAINT PK_stats PRIMARY KEY (guildID, userID, gameType)
             )
             '''
 		)
@@ -57,6 +57,24 @@ class SqlBackend(AbstractBackend):
 				maxPoints INT NOT NULL
 			)
 			'''
+		)
+		self.cursor.execute(
+			'''
+            CREATE TABLE IF NOT EXISTS gametypes (
+                gametype text NOT NULL,
+                CONSTRAINT PK_gametypes PRIMARY KEY (gametype)
+            )
+            '''
+		)
+		self.cursor.execute(
+			'''
+            CREATE TABLE IF NOT EXISTS accept (
+                userID text NOT NULL,
+                guildID int NOT NULL,
+                channelID int not null,
+                CONSTRAINT PK_accept PRIMARY KEY (userID, guildID)
+            )
+            '''
 		)
 
 	def save( self ) -> None:
