@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Tuple, List, Optional, Any
+from typing import Dict, List, Optional, Any
 
 from core.abc.database.database import AbstractDatabase
 from core.abc.database.guild import AbstractGuild
@@ -250,7 +250,7 @@ class Guild(AbstractGuild):
 
 		return rank[0][0] if not None else "no rank"
 
-	def makeAccept(self, userID: int, user2ID: int,  channelID: int):
+	def makeGameRequest(self, userID: int, user2ID: int,  channelID: int):
 		"""
 		Make an accept action
 		:param channelID:
@@ -262,7 +262,7 @@ class Guild(AbstractGuild):
 		check = self._checkAccept( userID )
 		if not check:
 			self.db.makeRequest(
-				'INSERT INTO accept(userID, guildID, channelID) VALUES (?, ?, ?)',
+				'INSERT INTO gameRequests(userID, guildID, channelID) VALUES (?, ?, ?)',
 				userID,
 				self.guildID,
 				user2ID
@@ -273,7 +273,7 @@ class Guild(AbstractGuild):
 		self.db.save()
 		return True
 
-	def _checkAccept( self, userID: int ):
+	def _checkGameRequest( self, userID: int ):
 		"""
 		Returns True if accept exist, else False
 		:param userID:
@@ -281,7 +281,7 @@ class Guild(AbstractGuild):
 		"""
 
 		check = self.db.makeRequest(
-			'SELECT * FROM accept WHERE (userID = ? OR user2ID = ?)  AND guildID = ?',
+			'SELECT * FROM gameRequests WHERE (userID = ? OR user2ID = ?)  AND guildID = ?',
 			userID,
 			userID,
 			self.guildID
@@ -293,7 +293,7 @@ class Guild(AbstractGuild):
 
 		return returnCheck
 
-	def delAccept(self, userID: int):
+	def delGameRequest(self, userID: int):
 		"""
 		Deletes accept
 		:param userID:
@@ -302,7 +302,7 @@ class Guild(AbstractGuild):
 		check = self._checkAccept( userID )
 		if check:
 			self.db.makeRequest(
-				"DELETE FROM accept WHERE (userID = ? OR user2ID = ?) AND guildID = ?",
+				"DELETE FROM gameRequests WHERE (userID = ? OR user2ID = ?) AND guildID = ?",
 				userID,
 				userID,
 				self.guildID
@@ -311,14 +311,14 @@ class Guild(AbstractGuild):
 			return False
 		return True
 
-	def getAccept(self, userID: int):
+	def getGameRequest(self, userID: int):
 		"""
 		returns an accept request
 		:param userID:
 		:return:
 		"""
 		requests = self.db.makeRequest(
-			'SELECT * FROM accept WHERE userID = ? AND guildID = ?',
+			'SELECT * FROM gameRequests WHERE userID = ? AND guildID = ?',
 			userID,
 			self.guildID
 		)

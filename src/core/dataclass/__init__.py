@@ -4,11 +4,13 @@ from typing import List, Any, Dict
 class PapUser:
 
 	userId: int
+	personalPrefix: str
 	permissions: List[bool]
 
-	def __init__( self, userId: int, permissions: List[bool]):
+	def __init__( self, userId: int, personalPrefix: str, permissions: str ):
 		self.userId = userId
-		self.permissions = permissions
+		self.personalPrefix = personalPrefix
+		self.permissions = [ bool( int( value ) ) for value in permissions ]
 
 
 class PapStats:

@@ -73,7 +73,18 @@ class SqlBackend(AbstractBackend):
 				user2ID text NOT NULL,
 				guildID int NOT NULL,
 				channelID int not null,
-				CONSTRAINT PK_accept PRIMARY KEY (userID, user2ID, guildID)
+				CONSTRAINT PK_gameRequests PRIMARY KEY (userID, user2ID, guildID)
+			)
+			'''
+		)
+		self.cursor.execute(
+			'''
+			CREATE TABLE IF NOT EXISTS users (
+				discordID INT NOT NULL,
+				guildID INT NOT NULL,
+				personalPrefix TEXT NOT NULL DEFAULT "!",
+				permissions TEXT NOT NULL,
+				CONSTRAINT PK_users PRIMARY KEY (discordID, guildID)
 			)
 			'''
 		)

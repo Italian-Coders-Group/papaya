@@ -119,7 +119,7 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 
 	@abstractmethod
-	def makeAccept(self, userID: int, user2ID: int, channelID: int):
+	def makeGameRequest(self, userID: int, user2ID: int, channelID: int):
 		"""
 		Make an accept action
 		:param user2ID:
@@ -129,7 +129,7 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 
 	@abstractmethod
-	def delAccept(self, userID: int):
+	def delGameRequest(self, userID: int):
 		"""
 		Deletes accept
 		:param userID:
@@ -137,7 +137,7 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 
 	@abstractmethod
-	def getAccept(self, userID: int):
+	def getGameRequest(self, userID: int):
 		"""
 		returns an accept request
 		:param userID:
