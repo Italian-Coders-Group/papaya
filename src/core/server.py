@@ -37,7 +37,7 @@ class Server( AbstractServer ):
 		self.guild = guild
 		self.logger = get_logger( guild.name )
 		self.commands = core.commandList.instance
-		self.secondaryPrefix = secondaryPrefix = {
+		self.secondaryPrefix = {
 			350938367405457408: '$$'
 		}
 
