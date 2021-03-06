@@ -17,7 +17,7 @@ async def mystats(server: AbstractServer, msg: Message):
     warnMsg = False
     msgContent = msg.content.split(' ', 1)
     if len(msgContent) > 1:
-        validGametype = server.GetDatabase().hasGametype(msgContent[1])
+        validGametype = server.GetDatabase().hasGameType( msgContent[1 ] )
         if not validGametype[0]:
             gameType = "any"
             warnMsg = True
@@ -41,7 +41,7 @@ async def stats(server: AbstractServer, msg: Message):
     userName = msg.mentions[0]
     print(msgContent)
     if len(msgContent) > 1:
-        validGametype = server.GetDatabase().hasGametype(msgContent[2])
+        validGametype = server.GetDatabase().hasGameType( msgContent[2 ] )
         if not validGametype[0]:
             gameType = "any"
             warnMsg = True
@@ -58,7 +58,7 @@ async def stats(server: AbstractServer, msg: Message):
 
 @Command
 async def category(server: AbstractServer, msg: Message):
-    allGameTypes = server.GetDatabase().getGametypes()
+    allGameTypes = server.GetDatabase().getGameTypes()
     listEmbed = embed(
         title="Categories",
         content="\n".join(gameType for gameType in allGameTypes),
@@ -94,7 +94,7 @@ async def surrender(server: AbstractServer, msg: Message):
 
 @Command
 async def cancel(server: AbstractServer, msg: Message):
-    hasAccept = server.GetDatabase().checkAccept(msg.author.id)
+    hasAccept = server.GetDatabase()._checkAccept( msg.author.id )
     if not hasAccept:
         await msg.channel.send("You have no games to accept")
     else:

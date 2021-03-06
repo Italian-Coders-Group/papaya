@@ -21,8 +21,8 @@ async def ttt(server: AbstractServer, msg: Message):
         msg.mentions[0].id) if \
         msg.mentions else False
     # mentionCheck = server.GetDatabase().getLiveGameForUser(msg.mentions[0].id)
-    acceptCheck = server.GetDatabase().checkAccept(msg.author.id) or server.GetDatabase().checkAccept(msg.mentions[
-                                                                                                          0].id) if \
+    acceptCheck = server.GetDatabase()._checkAccept( msg.author.id ) or server.GetDatabase()._checkAccept( msg.mentions[
+                                                                                                          0].id ) if \
         msg.mentions else False
 
     if gameChek or acceptCheck:

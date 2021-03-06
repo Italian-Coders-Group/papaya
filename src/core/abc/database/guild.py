@@ -60,7 +60,7 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 		pass
 
-	def hasGametype(self, gameType: str) -> list:
+	def hasGameType( self, gameType: str ) -> list:
 		"""
 		Returns True if game type exist else False
 		:param gameType:
@@ -68,7 +68,7 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 		pass
 
-	def getGametypes(self) -> list:
+	def getGameTypes( self ) -> list:
 		"""
 		Returns a list of Available categories
 		:return:
@@ -108,35 +108,22 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 
 	@abstractmethod
-	def getRankForUserInGame(self, userId: int, gameType: str) -> str:
+	def getRankForUserInGame(self, wins: int, losses: int, ties: int, gameType: str) -> str:
 		"""
 		Returns the string for the rank in a specified guild
-		:param userId:
+		:param ties:
+		:param losses:
+		:param wins:
 		:param gameType:
 		:return:
 		"""
 
 	@abstractmethod
-	def calculateRankForUserStats(self, userStats: list) -> int:
+	def makeAccept(self, userID: int, user2ID: int, channelID: int):
 		"""
-		Calculates the rank for single gameType. Returns None if gametype is any
-		:param userStats:
-		:return:
-		"""
-
-	@abstractmethod
-	def makeAccept(self, userID: int, channelID):
-		"""
-        Make an accept action
-        :param channelID:
-        :param userID:
-        :return:
-        """
-
-	@abstractmethod
-	def checkAccept(self, userID: int):
-		"""
-		Returns True if accept exist, else False
+		Make an accept action
+		:param user2ID:
+		:param channelID:
 		:param userID:
 		:return:
 		"""
@@ -158,13 +145,11 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 
 	@abstractmethod
-	def saveStatsForUserInGuild(self, userID: str, gameType: str, win: bool = False, loss: bool = False, tie: bool = False):
+	def saveStatsForUserInGuild( self, userID: str, gameType: str, stat: str ):
 		"""
 		Updates +1 if win, tie or loss is True.
 		:param gameType:
 		:param userID:
-		:param win:
-		:param loss:
-		:param tie:
+		:param stat:
 		:return:
 		"""

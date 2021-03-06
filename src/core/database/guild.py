@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Tuple, List, Optional
+from typing import Dict, Tuple, List, Optional, Any
 
 from core.abc.database.database import AbstractDatabase
 from core.abc.database.guild import AbstractGuild
@@ -24,14 +24,8 @@ class Guild(AbstractGuild):
 		"""
 		if gameID not in self._gameCache.keys():
 			# EXPLANATION: select a game with gameID gameID and guildID guildID
-			gameData: Tuple = self.db.makeRequest('SELECT * FROM games WHERE guildID = ? AND gameID = ?', self.guildID, gameID )[0]
-			self._gameCache[ gameID ] = PapGame(
-				gameID=gameID,
-				gameType=gameData[2],
-				userIDs=[ int(num) for num in gameData[3].split(',')  ],
-				gameData=json.loads( gameData[4] ),
-				live=gameData[5]
-			)
+			gameData: Dict[str, Any] = self.db.makeRequest('SELECT * FROM games WHERE guildID = ? AND gameID = ?', self.guildID, gameID, table='games' )
+			self._gameCache[ gameID ] = PapGame(**gameData)
 		return self._gameCache.get( gameID )
 
 	def setGame( self, game: PapGame ) -> None:
@@ -49,7 +43,7 @@ class Guild(AbstractGuild):
 				game.gameType
 			)
 		self.db.makeRequest(
-			# EXPLANATION: insert a game with all thir values
+			# EXPLANATION: insert a game with all their values
 			'INSERT INTO games (guildID, gameID, gameType, userIDs, gameData, live) VALUES (?, ?, ?, ?, ?, ?)',
 			self.guildID,
 			game.gameID,
@@ -101,33 +95,33 @@ class Guild(AbstractGuild):
 		"""
 		raise NotImplementedError()
 
-	def hasGametype(self, gameType: str) -> list:
+	def hasGameType( self, gameType: str ) -> bool:
 		"""
 		Returns True if game type exist else False
 		:param gameType:
 		:return:
 		"""
-		if gameType == "any":
-			hasGametype = [True, 1]
+		if gameType == 'any':
+			hasGameType = True
 		else:
 			selection = self.db.makeRequest(
-				"SELECT gametype FROM gametypes WHERE gametype = ?",
+				'SELECT gametype FROM gametypes WHERE gametype = ?',
 				gameType
 			)
 			if len(selection) == 0:
-				hasGametype = [False, 0]
+				hasGameType = False
 			else:
-				hasGametype = [True, 0]
-		return hasGametype
+				hasGameType = True
+		return hasGameType
 
-	def getGametypes(self) -> list:
+	def getGameTypes( self ) -> list:
 		"""
 		Returns a list of Available categories
 		:return:
 		"""
 		lastGameTypes = []
 		crudeGameTypes = self.db.makeRequest(
-			"SELECT gametype from gametypes"
+			'SELECT gametype from gametypes'
 		)
 		for gametype in crudeGameTypes:
 			lastGameTypes.append(gametype[0])
@@ -159,18 +153,11 @@ class Guild(AbstractGuild):
 		for game in dbGames:
 			if str(userID) in game[3].split(','):
 				games.append(
-					PapGame(
-						gameID=game[1],
-						live=bool( game[5] ),
-						gameType=game[2],
-						userIDs=[ int( num ) for num in game[ 3 ].split( ',' ) ],
-						gameData=json.loads( game[ 4 ] )
-					)
+					PapGame( **game )
 				)
 		return games
 
-	def getLiveGameForUser( self, userID: int, gameType: str = 'any', user: Optional[ PapUser ] = None ) -> List[
-		PapGame ]:
+	def getLiveGameForUser( self, userID: int, gameType: str = 'any', user: Optional[ PapUser ] = None ) -> List[ PapGame ]:
 		"""
 		Returns a list with all live games that this user is playing
 		:param gameType: the type of the game, use "any" for any type
@@ -195,13 +182,7 @@ class Guild(AbstractGuild):
 		for game in dbGames:
 			if str( userID ) in game[ 3 ].split( ',' ):
 				games.append(
-					PapGame(
-						gameID=game[ 1 ],
-						live=bool( game[ 5 ] ),
-						userIDs=[ int( num ) for num in game[ 3 ].split( ',' ) ],
-						gameData=json.loads( game[ 4 ] ),
-						gameType=game[2]
-					)
+					PapGame( **game )
 				)
 		return games
 
@@ -212,18 +193,12 @@ class Guild(AbstractGuild):
 		:param gameType:
 		:return: user
 		"""
-		validGametype = self.hasGametype(gameType)
-		print(validGametype)
-		if not validGametype[0]:
-			validType = "any"
-		else:
-			validType = gameType
-		print(validType)
-		print(gameType)
+		validType = 'any' if not self.hasGameType( gameType ) else gameType
+
 		user = self.db.makeRequest(
 			'SELECT guildID, userID,'
 			'(SELECT SUM(wins) FROM stats WHERE userID = ? AND guildID = ?) AS totalWins,'
-			'(SELECT SUM(losses) FROM stats WHERE userID = ? AND guildID = ?) AS totalLoses,'
+			'(SELECT SUM(loses) FROM stats WHERE userID = ? AND guildID = ?) AS totalLoses,'
 			'(SELECT SUM(ties) FROM stats WHERE userID = ? AND guildID = ?) AS totalTies'
 			' FROM stats WHERE userID = ? AND guildID = ?',
 			userID,
@@ -233,75 +208,60 @@ class Guild(AbstractGuild):
 			userID,
 			self.guildID,
 			userID,
-			self.guildID
+			self.guildID,
+			table='stats'
 		) if gameType == "any" else self.db.makeRequest(
 			'SELECT * FROM stats WHERE userID = ? AND guildID = ? AND gameType = ?',
 			userID,
 			self.guildID,
-			validType
+			validType,
+			table='stats'
 		)
 
-		if len(user) > 0:
-			middleUser = user[0]
-			if validType == "any":
-				returnUser = PapStats(
-					userId=middleUser[1],
-					gameType=validType,
-					gamesWon=middleUser[2],
-					gamesLost=middleUser[3],
-					gamesTied=middleUser[4],
-					rank=None
-				)
-			else:
-				returnUser = PapStats(
-					userId=middleUser[1],
-					gameType=middleUser[2],
-					gamesWon=middleUser[3],
-					gamesLost=middleUser[4],
-					gamesTied=middleUser[5],
-					rank=self.getRankForUserInGame([middleUser[3], middleUser[4], middleUser[5]], middleUser[2])
-				)
+		if len( user ) == 0:
+			return None
 
-		return returnUser
+		if validType == 'any':
+			return PapStats( **user, rank=None, gameType='any' )
+		else:
+			return PapStats(
+				**user,
+				rank=self.getRankForUserInGame(
+					wins=user['wins'],
+					losses=user['losses'],
+					ties=user['ties'],
+					gameType=user['gameType']
+				)
+			)
 
-	def getRankForUserInGame(self, userStats: list, gameType: str) -> str:
+	def getRankForUserInGame(self, wins: int, losses: int, ties: int, gameType: str) -> str:
 		"""
-        Returns the string for the rank in a specified guild, returns 0 if gameType is any
-        :param userStats:
-        :param gameType:
-        :return:
-        """
+		Returns the string for the rank in a specified guild
+		:param ties:
+		:param losses:
+		:param wins:
+		:param gameType:
+		:return:
+		"""
 		rank = self.db.makeRequest(
 			"SELECT rank from ranks WHERE ? BETWEEN minPoints AND maxPoints",
-			self.calculateRankForUserStats(userStats) if gameType != "any" else 0
+			_calculateRankForStats( wins, losses, ties ) if gameType != "any" else 0
 		)
 
 		return rank[0][0] if not None else "no rank"
 
-	def calculateRankForUserStats(self, userStats: list) -> int:
+	def makeAccept(self, userID: int, user2ID: int,  channelID: int):
 		"""
-		Calculates the rank for single gameType. Returns 0 if gametype is any
-		:param userStats:
+		Make an accept action
+		:param channelID:
+		:param user2ID:
+		:param userID:
 		:return:
 		"""
 
-		wins, losses, ties = userStats
-
-		final = (wins * 1) + (losses * -1) + (ties * 0)
-
-		return final
-
-	def makeAccept(self, userID: int, user2ID: int,  channelID):
-		"""
-        Make an accept action
-        :param channelID:
-        :param user2ID:
-        :param userID:
-        :return:
-        """
-		check = self.checkAccept(userID)
+		check = self._checkAccept( userID )
 		if not check:
-			accept = self.db.makeRequest(
+			self.db.makeRequest(
 				'INSERT INTO accept(userID, guildID, channelID) VALUES (?, ?, ?)',
 				userID,
 				self.guildID,
@@ -309,15 +269,17 @@ class Guild(AbstractGuild):
 			)
 		else:
 			return False
+
 		self.db.save()
 		return True
 
-	def checkAccept(self, userID: int):
+	def _checkAccept( self, userID: int ):
 		"""
 		Returns True if accept exist, else False
 		:param userID:
 		:return:
 		"""
+
 		check = self.db.makeRequest(
 			'SELECT * FROM accept WHERE (userID = ? OR user2ID = ?)  AND guildID = ?',
 			userID,
@@ -337,9 +299,9 @@ class Guild(AbstractGuild):
 		:param userID:
 		:return:
 		"""
-		check = self.checkAccept(userID)
+		check = self._checkAccept( userID )
 		if check:
-			delete = self.db.makeRequest(
+			self.db.makeRequest(
 				"DELETE FROM accept WHERE (userID = ? OR user2ID = ?) AND guildID = ?",
 				userID,
 				userID,
@@ -367,37 +329,38 @@ class Guild(AbstractGuild):
 
 		return returnRequest
 
-	def saveStatsForUserInGuild(self, userID: str, gameType: str, win: bool = False, loss: bool = False, tie: bool = False):
+	def saveStatsForUserInGuild(self, userID: str, gameType: str, stat: str):
 		"""
 		Updates +1 if win, tie or loss is True.
 		:param gameType:
 		:param userID:
-		:param win:
-		:param loss:
-		:param tie:
+		:param stat:
 		:return:
 		"""
 
-		if win:
+		if stat == 'win':
 			self.db.makeRequest(
 				"UPDATE stats SET wins = wins + 1 WHERE guildID = ? AND userID = ? AND gameType = ?",
 				self.guildID,
 				userID,
 				gameType
 			)
-		elif loss:
+		elif stat == 'loss':
 			self.db.makeRequest(
-				"UPDATE stats SET losses = losses + 1 WHERE guildID = ? AND userID = ? AND gameType = ?",
+				"UPDATE stats SET loses = loses + 1 WHERE guildID = ? AND userID = ? AND gameType = ?",
 				self.guildID,
 				userID,
 				gameType
 			)
-		elif tie:
+		else:
 			self.db.makeRequest(
-				"UPDATE stats SET ties = ties + 1 WHERE guildID = ? AND userID = ? AND gameType = ?",
+				'UPDATE stats SET ties = ties + 1 WHERE guildID = ? AND userID = ? AND gameType = ?',
 				self.guildID,
 				userID,
 				gameType
 			)
 
-		return
+
+def _calculateRankForStats( wins: int, losses: int, ties: int ) -> int:
+	"""	Calculates the rank for single gameType. Returns 0 if gameType is any """
+	return (wins * 1) + (losses * -1) + (ties * 0)
