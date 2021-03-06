@@ -76,11 +76,12 @@ class Guild(AbstractGuild):
 		if userID not in self._userCache.keys():
 			# EXPLANATION: select an user with userID userID and guildID of this guild
 			userData: Dict[ str, Any ] = self.db.makeRequest(
-				'SELECT * FROM games WHERE guildID = ? AND gameID = ?',
+				'SELECT * FROM users WHERE guildID = ? AND discordID = ?',
 				self.guildID,
 				userID,
 				table='users',
 			)
+			userData.pop('guildID')
 			self._userCache[ userID ] = PapUser( **userData )
 		return self._userCache.get( userID )
 
