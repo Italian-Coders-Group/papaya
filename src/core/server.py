@@ -9,8 +9,16 @@ import logging
 from . import Database
 from .abc.database.guild import AbstractGuild
 from .abc.server import AbstractServer
+from .dataclass.PapUser import PapUser
 from .logging import get_logger
 import core.commandList
+
+
+defaultPerms = {
+	'manage bot': True,
+	'start game': True,
+	'edit permissions': True,
+}
 
 
 async def DefCommand( server: AbstractServer, msg: discord.Message ) -> int:
@@ -39,10 +47,19 @@ class Server( AbstractServer ):
 		:param msg: message to handle
 		"""
 		# setup
+		# user db check
+		if not self.GetDatabase().hasUser( msg.author.id ):
+			self.GetDatabase().setUser(
+				PapUser(
+					discordID=msg.author.id,
+					personalPrefix=self.prefix,
+					permissions=PapUser.serializePermissions( [ x for x in defaultPerms.values() ] )
+				)
+			)
 		prefix = self.prefix
 		if not msg.content.startswith( prefix ):
 			if msg.author.id not in self.secondaryPrefix.keys():
-				return
+				self.secondaryPrefix[ msg.author.id ] = self.GetDatabase().getUser( msg.author.id ).personalPrefix
 			prefix = self.secondaryPrefix[msg.author.id]
 			if not msg.content.startswith( prefix ):
 				return

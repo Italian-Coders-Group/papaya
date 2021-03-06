@@ -1,9 +1,10 @@
-import json
 from typing import Dict, List, Optional, Any
 
 from core.abc.database.database import AbstractDatabase
 from core.abc.database.guild import AbstractGuild
-from core.dataclass import PapGame, PapUser, PapStats
+from core.dataclass import PapStats
+from core.dataclass.PapGame import PapGame
+from core.dataclass.PapUser import PapUser
 
 
 class Guild(AbstractGuild):
@@ -44,8 +45,8 @@ class Guild(AbstractGuild):
 				# EXPLANATION: delete a game
 				'UPDATE games SET userIDs = ?, gameData = ?, live = ? WHERE guildID = ? AND gameID = ? AND gameType = ?',
 				# data
-				str( game.userIDs )[ 1: ][ :-1 ].replace( ' ', '' ),
-				json.dumps( game.gameData, indent=None, separators=(',', ':') ),
+				PapGame.serializeUsers( game.userIDs ),
+				PapGame.serializeGameData( game.gameData ),
 				game.live,
 				# identification
 				self.guildID,
@@ -61,8 +62,8 @@ class Guild(AbstractGuild):
 				game.gameID,
 				game.gameType,
 				# data
-				str( game.userIDs )[1:][:-1].replace(' ', ''),
-				json.dumps( game.gameData, indent=None, separators=(',', ':') ),
+				PapGame.serializeUsers( game.userIDs ),
+				PapGame.serializeGameData( game.gameData ),
 				game.live
 			)
 
@@ -95,7 +96,7 @@ class Guild(AbstractGuild):
 				'UPDATE users SET personalPrefix = ?, permissions = ? WHERE guildID = ? AND discordID = ?',
 				# data
 				user.personalPrefix,
-				''.join( [ str( int( value ) ) for value in user.permissions ] ),  # serialize the list of bools into a str
+				PapUser.serializePermissions(user.permissions),
 				# identification
 				self.guildID,
 				user.userID
@@ -109,7 +110,7 @@ class Guild(AbstractGuild):
 				user.userID,
 				# data
 				user.personalPrefix,
-				''.join( [ str( int( value ) ) for value in user.permissions ] )  # serialize the list of bools into a str
+				PapUser.serializePermissions(user.permissions)
 			)
 
 	def hasGame( self, gameID: str, checkCache: bool = True, gameType: Optional[ str ] = 'any' ) -> bool:
@@ -260,7 +261,7 @@ class Guild(AbstractGuild):
 		user = self.db.makeRequest(
 			'SELECT guildID, userID,'
 			'(SELECT SUM(wins) FROM stats WHERE userID = ? AND guildID = ?) AS totalWins,'
-			'(SELECT SUM(loses) FROM stats WHERE userID = ? AND guildID = ?) AS totalLoses,'
+			'(SELECT SUM(losses) FROM stats WHERE userID = ? AND guildID = ?) AS totalLoses,'
 			'(SELECT SUM(ties) FROM stats WHERE userID = ? AND guildID = ?) AS totalTies'
 			' FROM stats WHERE userID = ? AND guildID = ?',
 			userID,
@@ -382,12 +383,13 @@ class Guild(AbstractGuild):
 		requests = self.db.makeRequest(
 			'SELECT * FROM gameRequests WHERE userID = ? AND guildID = ?',
 			userID,
-			self.guildID
+			self.guildID,
+			table='gameRequest'
 		)
 		if len(requests) > 0:
 			returnRequest = requests[0]
 		else:
-			returnRequest = False
+			returnRequest = [None, None, None]
 
 		return returnRequest
 
@@ -409,7 +411,7 @@ class Guild(AbstractGuild):
 			)
 		elif stat == 'loss':
 			self.db.makeRequest(
-				"UPDATE stats SET loses = loses + 1 WHERE guildID = ? AND userID = ? AND gameType = ?",
+				"UPDATE stats SET losses = losses + 1 WHERE guildID = ? AND userID = ? AND gameType = ?",
 				self.guildID,
 				userID,
 				gameType

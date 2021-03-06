@@ -1,18 +1,3 @@
-from typing import List, Any, Dict
-
-
-class PapUser:
-
-	userID: int
-	personalPrefix: str
-	permissions: List[bool]
-
-	def __init__( self, discordID: int, personalPrefix: str, permissions: str ):
-		self.userID = discordID
-		self.personalPrefix = personalPrefix
-		self.permissions = [ bool( int( value ) ) for value in permissions ]
-
-
 class PapStats:
 
 	userId: int
@@ -31,17 +16,4 @@ class PapStats:
 		self.rank = rank
 
 
-class PapGame:
 
-	gameID: str
-	userIDs: List[int]
-	gameData: Dict[str, Any]
-	gameType: str
-	live: bool
-
-	def __init__( self, gameID: str, gameType: str, userIDs: str, gameData: Dict[str, Any], live: bool ):
-		self.gameID = gameID
-		self.gameType = gameType
-		self.userIDs = [ int(user) for user in userIDs.split(',') ]
-		self.gameData = gameData
-		self.live = live

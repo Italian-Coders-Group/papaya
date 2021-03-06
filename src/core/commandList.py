@@ -2,6 +2,7 @@ from typing import Coroutine, Dict, Awaitable, List
 
 from discord import Message
 
+from core import utils
 from core.abc.server import AbstractServer
 
 
@@ -36,8 +37,15 @@ class CommandList:
 		elif len( prefix ) == 0:
 			await msg.channel.send( f'prefix too short! minimum lenght is 1.' )
 		else:
-			server.secondaryPrefix[msg.author.id] = prefix
+			server.secondaryPrefix[ msg.author.id ] = prefix
+			user: 'PapUser' = server.GetDatabase().getUser( msg.author.id )
+			user.personalPrefix = prefix
+			server.GetDatabase().setUser( user )
 			await msg.channel.send(f'personal prefix changed to "{prefix}"')
+
+	async def savedata( self, server: AbstractServer, msg: Message ):
+		if msg.author.id in utils.getAuthors()():
+			server.GetDatabase().db.save()
 
 	# INSTANCE METHODS: NOT COMMANDS
 

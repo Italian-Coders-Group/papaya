@@ -59,7 +59,7 @@ class Database(AbstractDatabase):
 		self.save()
 
 
-def _makeDictionary(table: str, row: List[Tuple], convertSingle: bool) -> Union[ List[ Dict[str, Any] ], Dict[str, Any] ]:
+def _makeDictionary( table: str, row: List[Tuple], convertSingle: bool) -> Union[ List[ Dict[str, Any] ], Dict[str, Any] ]:
 	items: List[ Dict[str, Any] ] = []
 	for item in row:
 		if table == 'games':

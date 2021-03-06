@@ -7,7 +7,7 @@ from .database.database import Database
 from . import server
 from . import utils
 from .logging import get_logger
-from .dataclass import PapGame
+from .dataclass.PapGame import PapGame
 from .utils import embed, getColor
 import modules
 
@@ -88,9 +88,10 @@ class Bot:
 			# call the right handler for the server
 			await self.servers[ msg.guild.id ].handleMsg( msg )
 
-		# MR EDIT
-		acceptList = self.database.getGuild(msg.guild.id).getGameRequest(msg.author.id)
-		delAccept = False
+		# MR EDIT (RE-EDIT BY ENDER CUZ IT BROKE)
+		acceptList: list = self.database.getGuild(msg.guild.id).getGameRequest(msg.author.id)
+		accepted: bool = False
+		delAccept: bool = None
 
 		if (acceptList[2] == msg.channel.id) and ("accept" in msg.content):
 			delAccept = self.database.getGuild(msg.guild.id).delGameRequest(msg.author.id)
@@ -112,8 +113,8 @@ class Bot:
 					PapGame(
 						gameID=game.gameID,
 						gameType=game.gameType,
-						userIDs=str( game.userIDs )[1:][:-1].replace(' ', ''),
-						gameData=game.gameData,
+						userIDs=PapGame.serializeUsers( game.userIDs ),
+						gameData=PapGame.serializeGameData( game.gameData ),
 						live=True
 					)
 				)

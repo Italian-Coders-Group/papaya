@@ -2,7 +2,9 @@ from abc import ABCMeta, abstractmethod
 from typing import List, Optional
 
 from core.abc.database.database import AbstractDatabase
-from core.dataclass import PapGame, PapUser, PapStats
+from core.dataclass import PapStats
+from core.dataclass.PapGame import PapGame
+from core.dataclass.PapUser import PapUser
 
 
 class AbstractGuild(metaclass=ABCMeta):
