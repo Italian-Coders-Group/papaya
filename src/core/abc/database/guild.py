@@ -34,11 +34,17 @@ class AbstractGuild(metaclass=ABCMeta):
 	@abstractmethod
 	def getUser( self, userID: int ) -> PapUser:
 		"""
-		NOT IMPLEMENTED
-		:param userID:
-		:return:
+		Gets a PapUser from the user id
+		:param userID: the discord id of the user
+		:return: the corresponding PapUser user
 		"""
-		pass
+
+	@abstractmethod
+	def setUser( self, user: PapUser ) -> None:
+		"""
+		Update the database by adding this user or by updating the saved user with this one
+		:param user: a PapUser object with new values
+		"""
 
 	@abstractmethod
 	def hasGame( self, gameID: str, checkCache: bool = True, gameType: Optional[str] = 'any' ) -> bool:
@@ -49,18 +55,17 @@ class AbstractGuild(metaclass=ABCMeta):
 		:param gameType: the type of the game to search, optional, can make searching faster
 		:return: True if we have it
 		"""
-		pass
 
 	@abstractmethod
 	def hasUser( self, userID: int, checkCache: bool = True ) -> bool:
 		"""
-		NOT IMPLEMENTED
-		:param checkCache:
-		:param userID:
-		:return:
+		Checks if has an user with that ID
+		:param userID: the user ID to search for
+		:param checkCache: True if should check the cache too
+		:return: True if we have it
 		"""
-		pass
 
+	@abstractmethod
 	def hasGameType( self, gameType: str ) -> list:
 		"""
 		Returns True if game type exist else False
@@ -69,6 +74,7 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 		pass
 
+	@abstractmethod
 	def getGameTypes( self ) -> list:
 		"""
 		Returns a list of Available categories

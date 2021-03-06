@@ -85,7 +85,7 @@ class Guild(AbstractGuild):
 
 	def setUser( self, user: PapUser ) -> None:
 		"""
-		Update the database by adding this game or by updating the saved game with this one
+		Update the database by adding this user or by updating the saved user with this one
 		:param user: a PapUser object with new values
 		"""
 		self._userCache[ user.userID ] = user
