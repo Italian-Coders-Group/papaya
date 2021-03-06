@@ -3,12 +3,12 @@ from typing import List, Any, Dict
 
 class PapUser:
 
-	userId: int
+	userID: int
 	personalPrefix: str
 	permissions: List[bool]
 
-	def __init__( self, userId: int, personalPrefix: str, permissions: str ):
-		self.userId = userId
+	def __init__( self, userID: int, personalPrefix: str, permissions: str ):
+		self.userID = userID
 		self.personalPrefix = personalPrefix
 		self.permissions = [ bool( int( value ) ) for value in permissions ]
 

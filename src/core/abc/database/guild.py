@@ -52,9 +52,10 @@ class AbstractGuild(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def hasUser( self, userID: int ) -> bool:
+	def hasUser( self, userID: int, checkCache: bool = True ) -> bool:
 		"""
 		NOT IMPLEMENTED
+		:param checkCache:
 		:param userID:
 		:return:
 		"""

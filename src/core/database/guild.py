@@ -23,8 +23,13 @@ class Guild(AbstractGuild):
 		:return: the PapGame object
 		"""
 		if gameID not in self._gameCache.keys():
-			# EXPLANATION: select a game with gameID gameID and guildID guildID
-			gameData: Dict[str, Any] = self.db.makeRequest('SELECT * FROM games WHERE guildID = ? AND gameID = ?', self.guildID, gameID, table='games' )
+			# EXPLANATION: select a game with gameID gameID and guildID of this guild
+			gameData: Dict[str, Any] = self.db.makeRequest(
+				'SELECT * FROM games WHERE guildID = ? AND gameID = ?',
+				self.guildID,
+				gameID,
+				table='games'
+			)
 			self._gameCache[ gameID ] = PapGame(**gameData)
 		return self._gameCache.get( gameID )
 
@@ -55,11 +60,42 @@ class Guild(AbstractGuild):
 
 	def getUser( self, userID: int ) -> PapUser:
 		"""
-		NOT IMPLEMENTED
-		:param userID:
-		:return:
+		Gets a PapUser from the user id
+		:param userID: the discord id of the user
+		:return: the corresponding PapUser user
 		"""
-		raise NotImplementedError()
+		if userID not in self._userCache.keys():
+			# EXPLANATION: select an user with userID userID and guildID of this guild
+			userData: Dict[ str, Any ] = self.db.makeRequest(
+				'SELECT * FROM games WHERE guildID = ? AND gameID = ?',
+				self.guildID,
+				userID,
+				table='users'
+			)
+			self._userCache[ userID ] = PapUser( **userData )
+		return self._userCache.get( userID )
+
+	def setUser( self, user: PapUser ) -> None:
+		"""
+		Update the database by adding this game or by updating the saved game with this one
+		:param user: a PapUser object with new values
+		"""
+		self._userCache[ user.userID ] = user
+		if self.hasUser( user.userID, checkCache=False ):
+			self.db.makeRequest(
+				# EXPLANATION: delete a game
+				'DELETE FROM users WHERE guildID = ? AND discordID = ?',
+				self.guildID,
+				user.userID
+			)
+		self.db.makeRequest(
+			# EXPLANATION: insert a game with all their values
+			'INSERT INTO users (guildID, discordID, personalPrefix, permissions) VALUES (?, ?, ?, ?)',
+			self.guildID,
+			user.userID,
+			user.personalPrefix,
+			''.join( [ str( int( value ) ) for value in user.permissions ] )  # serialize the list of bools into a str
+		)
 
 	def hasGame( self, gameID: str, checkCache: bool = True, gameType: Optional[ str ] = 'any' ) -> bool:
 		"""
@@ -87,9 +123,10 @@ class Guild(AbstractGuild):
 		)
 		return len( games ) > 0
 
-	def hasUser( self, userID: int ) -> bool:
+	def hasUser( self, userID: int, checkCache: bool = True ) -> bool:
 		"""
 		NOT IMPLEMENTED
+		:param checkCache:
 		:param userID:
 		:return:
 		"""
