@@ -8,6 +8,7 @@ from core.database.guild import Guild
 
 _tables: List[str] = [
 	'games',
+	'users',
 	'stats',
 	'ranks',
 	'gameTypes',
@@ -70,6 +71,15 @@ def _makeDictionary(table: str, row: List[Tuple], convertSingle: bool) -> Union[
 					'userIDs': item[ 3 ],
 					'gameData': item[ 4 ],
 					'live': item[ 5 ]
+				}
+			)
+		elif table == 'users':
+			items.append(
+				{
+					'guildID': item[ 0 ],
+					'discordID': item[ 1 ],
+					'personalPrefix': item[ 2 ],
+					'permissions': item[ 3 ]
 				}
 			)
 		elif table == 'stats':

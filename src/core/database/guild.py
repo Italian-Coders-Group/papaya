@@ -42,21 +42,29 @@ class Guild(AbstractGuild):
 		if self.hasGame( game.gameID, checkCache=False ):
 			self.db.makeRequest(
 				# EXPLANATION: delete a game
-				'DELETE FROM games WHERE guildID = ? AND gameID = ? AND gameType = ?',
+				'UPDATE games SET userIDs = ?, gameData = ?, live = ? WHERE guildID = ? AND gameID = ? AND gameType = ?',
+				# data
+				str( game.userIDs )[ 1: ][ :-1 ].replace( ' ', '' ),
+				json.dumps( game.gameData, indent=None, separators=(',', ':') ),
+				game.live,
+				# identification
 				self.guildID,
 				game.gameID,
 				game.gameType
 			)
-		self.db.makeRequest(
-			# EXPLANATION: insert a game with all their values
-			'INSERT INTO games (guildID, gameID, gameType, userIDs, gameData, live) VALUES (?, ?, ?, ?, ?, ?)',
-			self.guildID,
-			game.gameID,
-			game.gameType,
-			str( game.userIDs )[1:][:-1].replace(' ', ''),
-			json.dumps( game.gameData, indent=None, separators=(',', ':') ),
-			game.live
-		)
+		else:
+			self.db.makeRequest(
+				# EXPLANATION: insert a game with all their values
+				'INSERT INTO games (guildID, gameID, gameType, userIDs, gameData, live) VALUES (?, ?, ?, ?, ?, ?)',
+				# identification
+				self.guildID,
+				game.gameID,
+				game.gameType,
+				# data
+				str( game.userIDs )[1:][:-1].replace(' ', ''),
+				json.dumps( game.gameData, indent=None, separators=(',', ':') ),
+				game.live
+			)
 
 	def getUser( self, userID: int ) -> PapUser:
 		"""
@@ -70,7 +78,7 @@ class Guild(AbstractGuild):
 				'SELECT * FROM games WHERE guildID = ? AND gameID = ?',
 				self.guildID,
 				userID,
-				table='users'
+				table='users',
 			)
 			self._userCache[ userID ] = PapUser( **userData )
 		return self._userCache.get( userID )
@@ -83,19 +91,26 @@ class Guild(AbstractGuild):
 		self._userCache[ user.userID ] = user
 		if self.hasUser( user.userID, checkCache=False ):
 			self.db.makeRequest(
-				# EXPLANATION: delete a game
-				'DELETE FROM users WHERE guildID = ? AND discordID = ?',
+				# EXPLANATION: update an existing user
+				'UPDATE users SET personalPrefix = ?, permissions = ? WHERE guildID = ? AND discordID = ?',
+				# data
+				user.personalPrefix,
+				''.join( [ str( int( value ) ) for value in user.permissions ] ),  # serialize the list of bools into a str
+				# identification
 				self.guildID,
 				user.userID
 			)
-		self.db.makeRequest(
-			# EXPLANATION: insert a game with all their values
-			'INSERT INTO users (guildID, discordID, personalPrefix, permissions) VALUES (?, ?, ?, ?)',
-			self.guildID,
-			user.userID,
-			user.personalPrefix,
-			''.join( [ str( int( value ) ) for value in user.permissions ] )  # serialize the list of bools into a str
-		)
+		else:
+			self.db.makeRequest(
+				# EXPLANATION: insert a game with all their values
+				'INSERT INTO users (guildID, discordID, personalPrefix, permissions) VALUES (?, ?, ?, ?)',
+				# identification
+				self.guildID,
+				user.userID,
+				# data
+				user.personalPrefix,
+				''.join( [ str( int( value ) ) for value in user.permissions ] )  # serialize the list of bools into a str
+			)
 
 	def hasGame( self, gameID: str, checkCache: bool = True, gameType: Optional[ str ] = 'any' ) -> bool:
 		"""
@@ -125,12 +140,22 @@ class Guild(AbstractGuild):
 
 	def hasUser( self, userID: int, checkCache: bool = True ) -> bool:
 		"""
-		NOT IMPLEMENTED
-		:param checkCache:
-		:param userID:
-		:return:
+		Checks if has an user with that ID
+		:param userID: the user ID to search for
+		:param checkCache: True if should check the cache too
+		:return: True if we have it
 		"""
-		raise NotImplementedError()
+		if checkCache:
+			if userID in self._userCache.keys():
+				return True
+		users: list = self.db.makeRequest(
+			# EXPLANATION: select all games that are from this guild, are of type gameType and
+			# their id is gameID
+			'SELECT * FROM users WHERE guildID = ? AND discordID = ?',
+			self.guildID,
+			userID
+		)
+		return len( users ) > 0
 
 	def hasGameType( self, gameType: str ) -> bool:
 		"""

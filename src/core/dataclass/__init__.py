@@ -7,8 +7,8 @@ class PapUser:
 	personalPrefix: str
 	permissions: List[bool]
 
-	def __init__( self, userID: int, personalPrefix: str, permissions: str ):
-		self.userID = userID
+	def __init__( self, discordID: int, personalPrefix: str, permissions: str ):
+		self.userID = discordID
 		self.personalPrefix = personalPrefix
 		self.permissions = [ bool( int( value ) ) for value in permissions ]
 
