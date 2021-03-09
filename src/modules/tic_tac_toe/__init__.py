@@ -3,7 +3,8 @@ from .AI import AI
 from core.commandList import Command
 from core.abc.server import AbstractServer
 from core.database.database import Database
-from core.dataclass import PapGame, PapUser
+from core.dataclass.PapGame import PapGame
+from core.dataclass.PapUser import PapUser
 from core.dataclass import utils as gameUtils
 from discord import Message, File
 from core.utils import embed, getColor
@@ -21,9 +22,7 @@ async def ttt(server: AbstractServer, msg: Message):
         msg.mentions[0].id) if \
         msg.mentions else False
     # mentionCheck = server.GetDatabase().getLiveGameForUser(msg.mentions[0].id)
-    acceptCheck = server.GetDatabase()._checkAccept( msg.author.id ) or server.GetDatabase()._checkAccept( msg.mentions[
-                                                                                                          0].id ) if \
-        msg.mentions else False
+    acceptCheck = server.GetDatabase()._checkGameRequest( msg.author.id ) or server.GetDatabase()._checkGameRequest( msg.mentions[ 0 ].id ) if msg.mentions else False
 
     if gameChek or acceptCheck:
         engaged = True
@@ -46,7 +45,7 @@ async def ttt(server: AbstractServer, msg: Message):
             server.GetDatabase().setGame(
                 PapGame(
                     gameUtils.getRandomGameID([player1.id, 0]),
-                    "tic tac toe",
+                    'tic tac toe',
                     [msg.author.id, 0],
                     newGame.getData(),
                     True
@@ -125,7 +124,7 @@ async def draw(server: AbstractServer, msg: Message):
             content="X: Player1 \tO: Player2",
             color=getColor(random=True)
         )
-        drawEmbed.set_image(url=f"https://papayabot.xyz/papayabot/games/imagesToSend/{resumeGameID}.png?bot=papaya")
+        drawEmbed.set_image(url=f"https://papayabot.xyz/papayabot/games/imagesToSend/{resumeGameID}.png?rstr={utils.genRandomString(6)}")
         drawEmbed.add_field(name="game_status", value="TestMessage", inline=False)
         await msg.channel.send(embed=drawEmbed)
 
