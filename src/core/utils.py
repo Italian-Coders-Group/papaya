@@ -108,13 +108,26 @@ def check_distance(x0, y0, x1, y1):
 		return True
 
 
-def genRandomString( size: int = 5) -> str:
+def genRandomString( size: int = 5, upper: bool = False, lower: bool = False, mix: bool = False, numbers: bool = True) -> str:
 	"""
-	Generates a random string of the given size
-	:param size:
+	Generates a random string of the given size and content.
+	:param numbers: Numbers are included in the string. Default True.
+	:param upper: Uppercase only. Default False.
+	:param lower: Lowecase only. Default False.
+	:param mix: Mix lowecase and uppercase. Default False.
+	:param size: Size of the desired string.
 	:return: String
 	"""
-	chars = string.ascii_letters + string.digits
+	chars = ''
+	if upper:
+		chars = string.ascii_uppercase
+	elif lower:
+		chars = string.ascii_lowercase
+	elif mix:
+		chars = string.ascii_letters
+
+	if numbers:
+		chars = chars + string.digits
 
 	return ''.join(choice(chars) for _ in range(size))
 
