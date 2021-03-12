@@ -13,7 +13,7 @@ class PapGame:
 		self.gameID = gameID
 		self.gameType = gameType
 		self.userIDs = PapGame.deserializeUsers(userIDs)
-		self.gameData = PapGame.serializeGameData( gameData )
+		self.gameData = PapGame.deserializeGameData( gameData )
 		self.live = live
 
 	@staticmethod
@@ -30,5 +30,5 @@ class PapGame:
 
 	@staticmethod
 	def deserializeUsers( users: list ):
-		# return [ int( user ) for user in users.split( ',' ) ]
-		return ''.join(f', {user}' for user in users)
+		return [ int( user ) for user in users.split( ',' ) ]
+		# return ''.join(f', {user}' for user in users)
