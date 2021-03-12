@@ -14,6 +14,7 @@ import os
 from core.fileSystem import File as localFile
 from core import utils
 
+# TODO: REDO ENTIRE GAMESYSTEM DUE TO DATASTUFF CHANGES
 
 @Command
 async def ttt(server: AbstractServer, msg: Message):
@@ -46,8 +47,8 @@ async def ttt(server: AbstractServer, msg: Message):
                 PapGame(
                     gameUtils.getRandomGameID([player1.id, 0]),
                     'tic tac toe',
-                    [msg.author.id, 0],
-                    newGame.getData(),
+                    PapGame.serializeUsers([msg.author.id, 0]),
+                    PapGame.serializeGameData(newGame.getData()),
                     True
                 )
             )
