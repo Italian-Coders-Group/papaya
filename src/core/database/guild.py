@@ -229,8 +229,7 @@ class Guild(AbstractGuild):
 		:param user: ALTERNATIVE: a PapUser
 		:return: list of games
 		"""
-		games = [ ]
-		dbGames: list = self.db.makeRequest(
+		game: dict = self.db.makeRequest(
 			# EXPLANATION: select all games that are live, from this guild, are of the type gameType,
 			# and include userID in userIDs
 			'SELECT * FROM games WHERE live = 1 AND guildID = ? AND gameType = ? AND userIDs LIKE ?',
@@ -243,12 +242,16 @@ class Guild(AbstractGuild):
 			self.guildID,
 			f'%{userID}%'
 		)
-		for game in dbGames:
-			if str( userID ) in game[ 3 ].split( ',' ):
-				games.append(
-					PapGame( **game )
-				)
-		return games
+		# EXPLANATION: no point in doing theese because this query returns only a dict. commented because it might
+		# be useful later.
+
+		# print(dbGames)
+		# for game in dbGames:
+		# 	if str( userID ) in game[ 3 ].split( ',' ):
+		# 		games.append(
+		# 			PapGame( **game )
+		# 		)
+		return game
 
 	def getStatsForUserInGuild(self, userID: int, gameType: str = "any") -> PapStats:
 		"""
