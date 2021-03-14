@@ -6,6 +6,7 @@ from core.database.database import Database
 from core.dataclass.PapGame import PapGame
 from core.dataclass.PapUser import PapUser
 from core.dataclass import utils as gameUtils
+from core.exception import GameRequestAlreadyLive
 from discord import Message, File
 from core.utils import embed, getColor
 from PIL import Image
@@ -16,64 +17,96 @@ from core import utils
 
 # TODO: REDO ENTIRE GAMESYSTEM DUE TO DATASTUFF CHANGES
 
+
 @Command
 async def ttt(server: AbstractServer, msg: Message):
-    engaged = False
-    gameChek = server.GetDatabase().getLiveGameForUser(msg.author.id) or server.GetDatabase().getLiveGameForUser(
-        msg.mentions[0].id) if \
-        msg.mentions else False
-    # mentionCheck = server.GetDatabase().getLiveGameForUser(msg.mentions[0].id)
-    acceptCheck = server.GetDatabase()._checkGameRequest( msg.author.id ) or server.GetDatabase()._checkGameRequest( msg.mentions[ 0 ].id ) if msg.mentions else False
 
-    if gameChek or acceptCheck:
-        engaged = True
+    try:
 
-    if not engaged:
-        pvp = True
-        if (not msg.mentions) or (msg.mentions[0].id in [781540733173366794, 485434957129580545]):
-            pvp = False
+        gameRequest = server.GetDatabase().makeGameRequest(msg.author.id, msg.mentions[0].id, msg.channel.id, 'tic tac toe') if msg.mentions else False
+        print(not gameRequest)
+        player1 = msg.author
+        player2 = None if not msg.mentions else msg.mentions[0]
+        newGame = Game(player1=player1, player2=player2)
+        server.GetDatabase().setGame(
+            PapGame(
+                gameID=gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id] if msg.mentions else [msg.author.id, 0]),
+                gameType='tic tac toe',
+                userIDs=PapGame.serializeUsers([msg.author.id, msg.mentions[0].id] if msg.mentions else [msg.author.id, 0]),
+                gameData=PapGame.serializeGameData(newGame.getData()),
+                live=not gameRequest
+            )
+        )
 
-            tttEmbed = embed(
-                title="New tic tac toe Game.",
-                content=f"This game is between {msg.author} and our AI",
+        if not msg.mentions:
+            tttContent = f'This game is between {msg.author.mention} and our AI'
+        else:
+            tttContent = f'This game is between {msg.author.mention} and {msg.mentions[0].mention}. Please wait until your opponent accept the game.'
+
+        tttEmbed = embed(
+                title='New tic tac toe Game.',
+                content=tttContent,
                 color=getColor(random=True)
             )
+        await msg.channel.send(embed=tttEmbed)
 
-            await msg.channel.send(embed=tttEmbed)
-            player1 = msg.author
-            player2 = None
-            newGame = Game(player1=player1, player2=player2)
-            server.GetDatabase().setGame(
-                PapGame(
-                    gameUtils.getRandomGameID([player1.id, 0]),
-                    'tic tac toe',
-                    PapGame.serializeUsers([msg.author.id, 0]),
-                    PapGame.serializeGameData(newGame.getData()),
-                    True
-                )
-            )
-        if pvp:
-            accept = server.GetDatabase().makeAccept(msg.mentions[0].id, msg.channel.id)
-            player1 = msg.author
-            player2 = msg.mentions[0]
-            newGame = Game(player1=player1, player2=player2)
+    except GameRequestAlreadyLive:
+        await msg.channel.send('GameRequestAlreadyLive')
 
-            server.GetDatabase().setGame(
-                PapGame(
-                    gameUtils.getRandomGameID([player1.id, player2.id]),
-                    "tic tac toe",
-                    [msg.author.id, msg.mentions[0].id],
-                    newGame.getData(),
-                    False
-                )
-            )
-            if accept:
-                await msg.channel.send(f"Please wait until {msg.mentions[0]} accepts the game.")
-            else:
-                await msg.channel.send(f"There was a problem with the accept")
+    # engaged = False
+    # gameChek = server.GetDatabase().getLiveGameForUser(msg.author.id) or server.GetDatabase().getLiveGameForUser(msg.mentions[0].id) if msg.mentions else False
+    # mentionCheck = server.GetDatabase().getLiveGameForUser(msg.mentions[0].id)
+    # acceptCheck = server.GetDatabase()._checkGameRequest( msg.author.id ) or server.GetDatabase()._checkGameRequest( msg.mentions[ 0 ].id ) if msg.mentions else False
 
-    else:
-        await msg.channel.send("Game cannot be made, someone is already engaged in another game or has an invitation")
+    # if gameChek or acceptCheck:
+    #     engaged = True
+
+    # if not engaged:
+    # pvp = True
+    # if (not msg.mentions) or (msg.mentions[0].id in [781540733173366794, 485434957129580545]):
+    #     pvp = False
+    #
+    #     tttEmbed = embed(
+    #         title="New tic tac toe Game.",
+    #         content=f"This game is between {msg.author} and our AI",
+    #         color=getColor(random=True)
+    #     )
+    #
+    #     await msg.channel.send(embed=tttEmbed)
+    #     player1 = msg.author
+    #     player2 = None
+    #     newGame = Game(player1=player1, player2=player2)
+    #     server.GetDatabase().setGame(
+    #         PapGame(
+    #             gameUtils.getRandomGameID([player1.id, 0]),
+    #             'tic tac toe',
+    #             PapGame.serializeUsers([msg.author.id, 0]),
+    #             PapGame.serializeGameData(newGame.getData()),
+    #             True
+    #         )
+    #     )
+    # if pvp:
+    #     accept = server.GetDatabase().makeAccept(msg.mentions[0].id, msg.channel.id)
+    #     player1 = msg.author
+    #     player2 = msg.mentions[0]
+    #     newGame = Game(player1=player1, player2=player2)
+    #
+    #     server.GetDatabase().setGame(
+    #         PapGame(
+    #             gameUtils.getRandomGameID([player1.id, player2.id]),
+    #             "tic tac toe",
+    #             [msg.author.id, msg.mentions[0].id],
+    #             newGame.getData(),
+    #             False
+    #         )
+    #     )
+    #     if accept:
+    #         await msg.channel.send(f"Please wait until {msg.mentions[0]} accepts the game.")
+    #     else:
+    #         await msg.channel.send(f"There was a problem with the accept")
+    #
+    # else:
+    #     await msg.channel.send("Game cannot be made, someone is already engaged in another game or has an invitation")
 
 
 @Command
