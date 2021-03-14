@@ -42,6 +42,7 @@ def embed(title: str, content: str, color: Color) -> Embed:
 		color=color,
 		title=title,
 		description=content,
+		thumbnail="t.ly/786J",
 		type='rich_embed'
 	)
 	return data
