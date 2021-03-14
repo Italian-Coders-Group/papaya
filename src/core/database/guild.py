@@ -5,6 +5,7 @@ from core.abc.database.guild import AbstractGuild
 from core.dataclass import PapStats
 from core.dataclass.PapGame import PapGame
 from core.dataclass.PapUser import PapUser
+from core.exception import GameNotFound, GameRequestAlreadyLive, GameRequestNotFound
 
 
 class Guild(AbstractGuild):
@@ -39,6 +40,7 @@ class Guild(AbstractGuild):
 		Update the database by adding this game or by updating the saved game with this one
 		:param game: a PapGame object with new values
 		"""
+
 		self._gameCache[ game.gameID ] = game
 		if self.hasGame( game.gameID, checkCache=False ):
 			self.db.makeRequest(
@@ -317,22 +319,25 @@ class Guild(AbstractGuild):
 
 		return rank[0][0] if not None else "no rank"
 
-	def makeGameRequest(self, userID: int, user2ID: int,  channelID: int):
+	def makeGameRequest(self, userID: int, user2ID: int,  channelID: int, gameType: str):
 		"""
 		Make an accept action
 		:param channelID:
 		:param user2ID:
 		:param userID:
+		:param gameType:
 		:return:
 		"""
 
-		check = self._checkAccept( userID )
+		check = self._checkGameRequest( userID, gameType ) or self._checkGameRequest( user2ID, gameType )
 		if not check:
 			self.db.makeRequest(
-				'INSERT INTO gameRequests(userID, guildID, channelID) VALUES (?, ?, ?)',
+				'INSERT INTO gameRequests(userID, user2ID, guildID, channelID, gameType) VALUES (?, ?, ?, ?, ?)',
 				userID,
+				user2ID,
 				self.guildID,
-				user2ID
+				channelID,
+				gameType
 			)
 		else:
 			return False
@@ -340,21 +345,23 @@ class Guild(AbstractGuild):
 		self.db.save()
 		return True
 
-	def _checkGameRequest( self, userID: int ):
+	def _checkGameRequest( self, userID: int, gameType: str):
 		"""
-		Returns True if accept exist, else False
+		Returns True if game request exist, else False
 		:param userID:
+		:param gameType:
 		:return:
 		"""
-
 		check = self.db.makeRequest(
-			'SELECT * FROM gameRequests WHERE (userID = ? OR user2ID = ?)  AND guildID = ?',
+			'SELECT * FROM gameRequests WHERE (userID = ? OR user2ID = ?)  AND guildID = ? AND gameType = ?',
 			userID,
 			userID,
-			self.guildID
+			self.guildID,
+			gameType
 		)
+
 		if len(check) > 0:
-			returnCheck = True
+			raise GameRequestAlreadyLive
 		else:
 			returnCheck = False
 
@@ -366,17 +373,13 @@ class Guild(AbstractGuild):
 		:param userID:
 		:return:
 		"""
-		check = self._checkAccept( userID )
-		if check:
-			self.db.makeRequest(
-				"DELETE FROM gameRequests WHERE (userID = ? OR user2ID = ?) AND guildID = ?",
-				userID,
-				userID,
-				self.guildID
-			)
-		else:
-			return False
-		return True
+		# NOTE: check is irrelevant. Maybe implement a new check, because the current is not possible to make due to raise in exception
+		self.db.makeRequest(
+			"DELETE FROM gameRequests WHERE (userID = ? OR user2ID = ?) AND guildID = ?",
+			userID,
+			userID,
+			self.guildID
+		)
 
 	def getGameRequest(self, userID: int):
 		"""
@@ -391,9 +394,9 @@ class Guild(AbstractGuild):
 			table='gameRequest'
 		)
 		if len(requests) > 0:
-			returnRequest = requests[0]
+			returnRequest = requests
 		else:
-			returnRequest = [None, None, None]
+			raise GameRequestNotFound
 
 		return returnRequest
 
