@@ -6,7 +6,7 @@ from core.database.database import Database
 from core.dataclass.PapGame import PapGame
 from core.dataclass.PapUser import PapUser
 from core.dataclass import utils as gameUtils
-from core.exception import GameRequestAlreadyLive
+from core.exception import *
 from discord import Message, File
 from core.utils import embed, getColor
 from PIL import Image
@@ -53,124 +53,68 @@ async def ttt(server: AbstractServer, msg: Message):
     except GameRequestAlreadyLive:
         await msg.channel.send('GameRequestAlreadyLive')
 
-    # engaged = False
-    # gameChek = server.GetDatabase().getLiveGameForUser(msg.author.id) or server.GetDatabase().getLiveGameForUser(msg.mentions[0].id) if msg.mentions else False
-    # mentionCheck = server.GetDatabase().getLiveGameForUser(msg.mentions[0].id)
-    # acceptCheck = server.GetDatabase()._checkGameRequest( msg.author.id ) or server.GetDatabase()._checkGameRequest( msg.mentions[ 0 ].id ) if msg.mentions else False
-
-    # if gameChek or acceptCheck:
-    #     engaged = True
-
-    # if not engaged:
-    # pvp = True
-    # if (not msg.mentions) or (msg.mentions[0].id in [781540733173366794, 485434957129580545]):
-    #     pvp = False
-    #
-    #     tttEmbed = embed(
-    #         title="New tic tac toe Game.",
-    #         content=f"This game is between {msg.author} and our AI",
-    #         color=getColor(random=True)
-    #     )
-    #
-    #     await msg.channel.send(embed=tttEmbed)
-    #     player1 = msg.author
-    #     player2 = None
-    #     newGame = Game(player1=player1, player2=player2)
-    #     server.GetDatabase().setGame(
-    #         PapGame(
-    #             gameUtils.getRandomGameID([player1.id, 0]),
-    #             'tic tac toe',
-    #             PapGame.serializeUsers([msg.author.id, 0]),
-    #             PapGame.serializeGameData(newGame.getData()),
-    #             True
-    #         )
-    #     )
-    # if pvp:
-    #     accept = server.GetDatabase().makeAccept(msg.mentions[0].id, msg.channel.id)
-    #     player1 = msg.author
-    #     player2 = msg.mentions[0]
-    #     newGame = Game(player1=player1, player2=player2)
-    #
-    #     server.GetDatabase().setGame(
-    #         PapGame(
-    #             gameUtils.getRandomGameID([player1.id, player2.id]),
-    #             "tic tac toe",
-    #             [msg.author.id, msg.mentions[0].id],
-    #             newGame.getData(),
-    #             False
-    #         )
-    #     )
-    #     if accept:
-    #         await msg.channel.send(f"Please wait until {msg.mentions[0]} accepts the game.")
-    #     else:
-    #         await msg.channel.send(f"There was a problem with the accept")
-    #
-    # else:
-    #     await msg.channel.send("Game cannot be made, someone is already engaged in another game or has an invitation")
-
 
 @Command
 async def draw(server: AbstractServer, msg: Message):
 
-    gameData = server.GetDatabase().getLiveGameForUser(userID=msg.author.id, gameType="tic tac toe")
+    try:
+        gameData = server.GetDatabase().getLiveGameForUser(userID=msg.author.id, gameType="tic tac toe")
+        still_live = True
 
-    still_live = True
+        resumeGame = Game(data=gameData[0])
+        resumeGameID = gameData[0].gameID
+        userIDs = gameData[0].userIDs
 
-    if not gameData:
-        await msg.channel.send("No games for you bud")
-        return
+        if resumeGame.turn.user != msg.author.id:
+            await msg.channel.send("Ehi bud it's not your turn yet")
+        else:
+            params = msg.content.split()
+            pos = params[1]
+            newState, code = resumeGame.makeMove(pos)
+            # await msg.channel.send(file=File(newState, f"{resumeGameID}.png"))
+            if code == 3:
+                await msg.channel.send("That position is invalid, try again")
+            elif code == 0:
+                await msg.channel.send("The game is still going on")
+            elif code == 1:
+                await msg.channel.send(f"Congrats {msg.author.mention} you won")
+                for userid in userIDs:
+                    if userid == msg.channel.id:
+                        server.GetDatabase().saveStatsForUserInGuild(userID=userid, win=True)
+                    else:
+                        server.GetDatabase().saveStatsForUserInGuild(userID=userid, loss=True)
+                still_live = False
+            elif code == 10:
+                await msg.channel.send("Sorry but you lost and our AI WON, ggs")
+                server.GetDatabase().saveStatsForUserInGuild(userID=msg.author.id, loss=True)
+                still_live = False
+            elif code == 100:
+                await msg.channel.send("This is a tie")
+                for userid in userid:
+                    server.GetDatabase().saveStatsForUserInGuild(userID=userid, tie=True)
+                still_live = False
 
-    resumeGame = Game(data=gameData[0])
-    resumeGameID = gameData[0].gameID
-    userIDs = gameData[0].userIDs
-
-    if resumeGame.turn.user != msg.author.id:
-        await msg.channel.send("Ehi bud it's not your turn yet")
-    else:
-        params = msg.content.split()
-        pos = params[1]
-        newState, code = resumeGame.makeMove(pos)
-        # await msg.channel.send(file=File(newState, f"{resumeGameID}.png"))
-        if code == 3:
-            await msg.channel.send("That position is invalid, try again")
-        elif code == 0:
-            await msg.channel.send("The game is still going on")
-        elif code == 1:
-            await msg.channel.send(f"Congrats {msg.author.mention} you won")
-            for userid in userIDs:
-                if userid == msg.channel.id:
-                    server.GetDatabase().saveStatsForUserInGuild(userID=userid, win=True)
-                else:
-                    server.GetDatabase().saveStatsForUserInGuild(userID=userid, loss=True)
-            still_live = False
-        elif code == 10:
-            await msg.channel.send("Sorry but you lost and our AI WON, ggs")
-            server.GetDatabase().saveStatsForUserInGuild(userID=msg.author.id, loss=True)
-            still_live = False
-        elif code == 100:
-            await msg.channel.send("This is a tie")
-            for userid in userid:
-                server.GetDatabase().saveStatsForUserInGuild(userID=userid, tie=True)
-            still_live = False
-
-        drawEmbed = embed(
-            title="Tic Tac Toe",
-            content="X: Player1 \tO: Player2",
-            color=getColor(random=True)
-        )
-        drawEmbed.set_image(url=f"https://papayabot.xyz/papayabot/games/imagesToSend/{resumeGameID}.png?rstr={utils.genRandomString(6)}")
-        drawEmbed.add_field(name="game_status", value="TestMessage", inline=False)
-        await msg.channel.send(embed=drawEmbed)
-
-        server.GetDatabase().setGame(
-            PapGame(
-                gameData[0].gameID,
-                gameData[0].gameType,
-                [x for x in gameData[0].userIDs],
-                resumeGame.getData(),
-                still_live
+            drawEmbed = embed(
+                title="Tic Tac Toe",
+                content="X: Player1 \tO: Player2",
+                color=getColor(random=True)
             )
-        )
+            drawEmbed.set_image(url=f"https://papayabot.xyz/papayabot/games/imagesToSend/{resumeGameID}.png?rstr={utils.genRandomString(6)}")
+            drawEmbed.add_field(name="game_status", value="TestMessage", inline=False)
+            await msg.channel.send(embed=drawEmbed)
+
+            server.GetDatabase().setGame(
+                PapGame(
+                    gameData[0].gameID,
+                    gameData[0].gameType,
+                    [x for x in gameData[0].userIDs],
+                    resumeGame.getData(),
+                    still_live
+                )
+            )
+    except GameNotFound:
+        await msg.channel.send(f"There is no game for you bud.")
+
 
 
 @Command
