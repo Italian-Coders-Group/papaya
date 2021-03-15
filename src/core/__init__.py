@@ -127,4 +127,4 @@ class Bot:
 					)
 					await msg.channel.send(embed=deniedEmbed)
 		except GameRequestNotFound:
-			print("Gamerequestnotfoud")
+			pass
