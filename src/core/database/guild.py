@@ -253,6 +253,8 @@ class Guild(AbstractGuild):
 		# 		games.append(
 		# 			PapGame( **game )
 		# 		)
+		if not game:
+			raise GameNotFound
 		return game
 
 	def getStatsForUserInGuild(self, userID: int, gameType: str = "any") -> PapStats:
