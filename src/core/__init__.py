@@ -89,10 +89,10 @@ class Bot:
 			# call the right handler for the server
 			await self.servers[ msg.guild.id ].handleMsg( msg )
 
-		# MR EDIT (RE-EDIT BY ENDER CUZ IT BROKE) ~~ MR RE-EDIT CUZ ENDER BROKE IT BY RE-EDITING CUZ I BROKE IT
+		# MR EDIT (RE-EDIT BY ENDER CUZ IT BROKE) ~~ MR RE-EDIT CUZ ENDER BROKE IT BY RE-EDITING CUZ I BROKE IT ~~ STILL NOT WORKING CAUSE DB STUFF
 		try:
 			acceptList: list = self.database.getGuild(msg.guild.id).getGameRequest(msg.author.id)
-			accepted: bool = False
+			accepted: bool
 
 			if (acceptList[3] == msg.channel.id) and ("accept" in msg.content):
 				self.database.getGuild(msg.guild.id).delGameRequest(msg.author.id)
