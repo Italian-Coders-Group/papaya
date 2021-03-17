@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 
 import core
 
@@ -10,6 +11,3 @@ core.logging.init_logging(
 core.Bot().run(
 	token=os.environ.get( 'TOKEN_TEST' if '--test' in sys.argv else 'TOKEN' )
 )
-
-
-

@@ -2,6 +2,7 @@ import math
 import traceback
 from typing import Any, List, Union, KeysView, ItemsView, Tuple, Callable
 from random import choice
+import string
 
 import discord
 from discord import Embed, Color
@@ -41,6 +42,7 @@ def embed(title: str, content: str, color: Color) -> Embed:
 		color=color,
 		title=title,
 		description=content,
+		thumbnail="t.ly/786J",
 		type='rich_embed'
 	)
 	return data
@@ -105,6 +107,30 @@ def check_distance(x0, y0, x1, y1):
 	distance = math.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
 	if distance == 1:
 		return True
+
+
+def genRandomString( size: int = 5, upper: bool = False, lower: bool = False, mix: bool = False, numbers: bool = True) -> str:
+	"""
+	Generates a random string of the given size and content.
+	:param numbers: Numbers are included in the string. Default True.
+	:param upper: Uppercase only. Default False.
+	:param lower: Lowecase only. Default False.
+	:param mix: Mix lowecase and uppercase. Default False.
+	:param size: Size of the desired string.
+	:return: String
+	"""
+	chars = ''
+	if upper:
+		chars = string.ascii_uppercase
+	elif lower:
+		chars = string.ascii_lowercase
+	elif mix:
+		chars = string.ascii_letters
+
+	if numbers:
+		chars = chars + string.digits
+
+	return ''.join(choice(chars) for _ in range(size))
 
 
 def placeHolderFunc(ph0=None, ph1=None):

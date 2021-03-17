@@ -29,5 +29,6 @@ class PapGame:
 		return str( userIDs )[ 1: ][ :-1 ].replace( ' ', '' )
 
 	@staticmethod
-	def deserializeUsers( users: str ):
+	def deserializeUsers( users: list ):
 		return [ int( user ) for user in users.split( ',' ) ]
+		# return ''.join(f', {user}' for user in users)

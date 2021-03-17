@@ -10,6 +10,7 @@ from .logging import get_logger
 from .dataclass.PapGame import PapGame
 from .utils import embed, getColor
 import modules
+from .exception import *
 
 logger = get_logger( 'BOT' )
 
@@ -88,40 +89,42 @@ class Bot:
 			# call the right handler for the server
 			await self.servers[ msg.guild.id ].handleMsg( msg )
 
-		# MR EDIT (RE-EDIT BY ENDER CUZ IT BROKE)
-		acceptList: list = self.database.getGuild(msg.guild.id).getGameRequest(msg.author.id)
-		accepted: bool = False
-		delAccept: bool = None
+		# MR EDIT (RE-EDIT BY ENDER CUZ IT BROKE) ~~ MR RE-EDIT CUZ ENDER BROKE IT BY RE-EDITING CUZ I BROKE IT ~~ STILL NOT WORKING CAUSE DB STUFF
+		try:
+			acceptList: list = self.database.getGuild(msg.guild.id).getGameRequest(msg.author.id)
+			accepted: bool
 
-		if (acceptList[2] == msg.channel.id) and ("accept" in msg.content):
-			delAccept = self.database.getGuild(msg.guild.id).delGameRequest(msg.author.id)
-			accepted = True
-		elif (acceptList[2] == msg.channel.id) and ("deny" in msg.content):
-			delAccept = self.database.getGuild(msg.guild.id).delGameRequest(msg.author.id)
-			accepted = False
+			if (acceptList[3] == msg.channel.id) and ("accept" in msg.content):
+				self.database.getGuild(msg.guild.id).delGameRequest(msg.author.id)
+				accepted = True
+			elif (acceptList[3] == msg.channel.id) and ("deny" in msg.content):
+				self.database.getGuild(msg.guild.id).delGameRequest(msg.author.id)
+				accepted = False
 
-		if acceptList and delAccept:
-			if accepted:
-				acceptedEmbed = embed(
-					title="Game accepted. Prepare",
-					content=f"This game is between {msg.author.mention} and his opponent TODO: get actual names, ty",
-					color=getColor(RGB="0,255,0")
-				)
-				await msg.channel.send(embed=acceptedEmbed)
-				game = self.database.getGuild(msg.guild.id).getGamesForUser(msg.author.id)[0]
-				self.database.getGuild(msg.guild.id).setGame(
-					PapGame(
-						gameID=game.gameID,
-						gameType=game.gameType,
-						userIDs=PapGame.serializeUsers( game.userIDs ),
-						gameData=PapGame.serializeGameData( game.gameData ),
-						live=True
+			if acceptList:
+				if accepted:
+					acceptedEmbed = embed(
+						title="Game accepted. Prepare",
+						content=f"This game is between {msg.author.mention} and his opponent TODO: get actual names, ty",
+						color=getColor(RGB="0,255,0")
 					)
-				)
-			else:
-				deniedEmbed = embed(
-					title="Game denied.",
-					content="This game is cancelled.",
-					color=getColor(RGB="255,0,0")
-				)
-				await msg.channel.send(embed=deniedEmbed)
+					await msg.channel.send(embed=acceptedEmbed)
+					game = self.database.getGuild(msg.guild.id).getGamesForUser(msg.author.id)[0]
+					self.database.getGuild(msg.guild.id).setGame(
+						PapGame(
+							gameID=game.gameID,
+							gameType=game.gameType,
+							userIDs=PapGame.serializeUsers(game.userIDs),
+							gameData=PapGame.serializeGameData(game.gameData),
+							live=True
+						)
+					)
+				else:
+					deniedEmbed = embed(
+						title="Game denied.",
+						content="This game is cancelled.",
+						color=getColor(RGB="255,0,0")
+					)
+					await msg.channel.send(embed=deniedEmbed)
+		except GameRequestNotFound:
+			pass
