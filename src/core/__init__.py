@@ -54,11 +54,6 @@ class Bot:
 		logger.info( f'{self.client.user}: Ready.' )
 		logger.info( f'The bot is currently in {len( self.client.guilds )} guilds.')
 
-	async def on_ready( self ):
-		"""	Called when the bot is ready to process incoming messages """
-		logger.info( f'{self.client.user}: Ready.' )
-		logger.info( f'The bot is currently in {len( self.client.guilds )} guilds.')
-
 	async def on_reaction_add( self, reaction: Reaction, user: Member ):
 		""" Called when an user reacts to a message """
 		if reaction.message.author == self.client.user:
