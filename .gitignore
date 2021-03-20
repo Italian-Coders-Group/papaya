@@ -4,3 +4,7 @@ logs
 resources/database.db
 resources/database.db-journal
 .idea
+.venv/pyvenv.cfg
+.venv/
+environment
+start
