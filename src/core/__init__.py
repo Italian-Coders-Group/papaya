@@ -8,11 +8,8 @@ from . import server
 from . import utils
 # import commandSystem, as it should be already up and running before the bot starts
 from . import commandSystem
-from .dataclass.PapGame import PapGame
 from .eventSystem import EventSystem, Events
-from .exception import GameRequestNotFound
 from .logging import get_logger
-from .utils import embed, getColor
 
 logger = get_logger( 'BOT' )
 
@@ -105,7 +102,6 @@ class Bot:
 				# reload command system _BEFORE_ everything else
 				moduleUtils.reload( commandSystem )
 				moduleUtils.reload( defaultCommands )
-				commandSystem.init()
 				# reload the rest
 				moduleUtils.reload( server )
 				await EventSystem.INSTANCE.invoke( Events.Reload )
