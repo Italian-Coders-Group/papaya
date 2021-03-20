@@ -4,14 +4,15 @@ from typing import Coroutine, Dict, Awaitable, List, Union
 
 from discord import Message
 
-from core import utils, types, get_logger
+from core import utils, types
+from core.logging import get_logger
 from core.abc.server import AbstractServer
 
 
 logger = get_logger()
 
 
-class CommandList:
+class CommandSystem:
 
 	__Commands: Dict[str, types.Coroutine] = {}
 
@@ -43,7 +44,7 @@ class CommandList:
 			return getattr( self, item, default )
 
 
-instance: CommandList = CommandList()
+instance: CommandSystem = CommandSystem()
 
 
 def Command( *args, **kwargs ):

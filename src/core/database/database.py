@@ -76,7 +76,7 @@ class Database(AbstractDatabase):
 		:param args: arguments for value sanitizing
 		:return: a List with the result (can be emtpy)
 		"""
-		return _makeDictionary( table, self.backend.makeRequest(sql, *args), convertSingle )
+		return _makeDictionary( table, self.backend.makeRequest(sql, *args) )
 
 	def save( self ) -> None:
 		"""	Commit changes to the database file	"""

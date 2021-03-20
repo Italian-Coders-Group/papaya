@@ -22,6 +22,7 @@ class EventSystem(AbstractEventSystem):
 
 	def __init__(self):
 		EventSystem.INSTANCE = self
+		self._listeners = {}
 
 	def removeListeners( self, module: str ):
 		# cycle in all event lists

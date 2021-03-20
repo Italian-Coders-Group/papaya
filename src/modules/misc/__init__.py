@@ -1,4 +1,4 @@
-from core.commandList import Command
+from core.commandSystem import Command
 from core.abc.server import AbstractServer
 from core.database.database import Database
 from core.dataclass import PapGame, PapUser, PapStats

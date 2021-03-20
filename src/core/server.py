@@ -8,12 +8,12 @@ import discord
 
 import logging
 
-from . import Database
+from . import Database, utils, commandSystem
 from .abc.database.guild import AbstractGuild
 from .abc.server import AbstractServer
 from .dataclass.PapUser import PapUser
 from .logging import get_logger
-import core.commandList
+import core.commandSystem
 
 
 defaultPerms = {
@@ -23,22 +23,18 @@ defaultPerms = {
 }
 
 
-async def DefCommand( server: AbstractServer, msg: discord.Message ) -> int:
-	return 1
-
-
 class Server( AbstractServer ):
 
 	guild: discord.Guild
 	prefix: str = '*'
 	roleRules: Dict[ str, object ]
-	commands: core.commandList.CommandList
+	commands: commandSystem.CommandSystem
 	logger: logging.Logger
 
 	def __init__(self, guild: discord.Guild):
 		self.guild = guild
 		self.logger = get_logger( guild.name )
-		self.commands = core.commandList.instance
+		self.commands = commandSystem.instance
 		self.secondaryPrefix = {
 			350938367405457408: '$$'
 		}
@@ -80,14 +76,14 @@ class Server( AbstractServer ):
 			f'issuer: {msg.author.name}'
 		)
 		# get function/coroutine
-		coro: Coroutine = self.commands.getOrDefault( cmd[ 0 ].lower(), DefCommand )
+		coro: Coroutine = self.commands.getOrDefault( cmd[ 0 ].lower(), utils.placeHolderCoro )
 		# check if its a command/coroutine
 		if not asyncio.iscoroutinefunction(coro):
 			return
 		# execute command
 		code = await coro(self, msg)
-		# check return code
-		if code == 1:
+		# check return code, None means that the placeholder was used
+		if code is None:
 			await msg.channel.send( f'Unknown command: {cmd[ 0 ]}' )
 
 	async def handleReactionAdd( self, reaction: Reaction, user: Member ) -> None:
