@@ -1,5 +1,6 @@
 import importlib
 import importlib.util
+from botframework.eventSystem import Listener
 from pathlib import Path
 from types import ModuleType
 from typing import Dict
@@ -20,7 +21,8 @@ def initializeGames():
 		__games[moduleName] = module
 
 
-def reloadGames():
+@Listener
+async def onReload():
 	"""	Reload all instatiated games """
 	for game in utils.copyList( __games.keys() ):
 		getattr(__games[game], 'reloadModules', placeHolderFunc)()
