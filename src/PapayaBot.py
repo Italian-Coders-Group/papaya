@@ -1,10 +1,10 @@
 import os
 import sys
 
-import botframework
+import core
 
 
-botframework.Bot().initLoggingAndRun(
+core.Bot().initLoggingAndRun(
 	filename='../logs/latest.log',
 	token=os.environ.get( 'TOKEN_TEST' if '--test' in sys.argv else 'TOKEN' )
 )

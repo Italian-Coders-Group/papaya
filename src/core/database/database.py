@@ -6,14 +6,43 @@ from core.database.backend import SqlBackend
 from core.database.guild import Guild
 
 
-_tables: List[str] = [
-	'games',
-	'users',
-	'stats',
-	'ranks',
-	'gameTypes',
-	'accepts'
-]
+_tables: Dict[str, List[str] ] = {
+	'users': [
+		'guildID',
+		'discordID',
+		'prefix'
+	],
+	'games': [
+		'guildID',
+		'gameID',
+		'gameType',
+		'userIDs',
+		'gameData',
+		'live'
+	],
+	'stats': [
+		'guildID',
+		'userID',
+		'gameType',
+		'wins',
+		'losses',
+		'ties'
+	],
+	'ranks': [
+		'rank',
+		'minPoints',
+		'maxPoints'
+	],
+	'gameTypes': [
+		'gameType'
+	],
+	'gameRequests': [
+		'userID',
+		'user2ID',
+		'guildID',
+		'channelID'
+	]
+}
 
 
 class Database(AbstractDatabase):
@@ -59,66 +88,18 @@ class Database(AbstractDatabase):
 		self.save()
 
 
-def _makeDictionary( table: str, row: List[Tuple], convertSingle: bool) -> Union[ List[ Dict[str, Any] ], Dict[str, Any] ]:
+def _makeDictionary( table: str, row: List[Tuple] ) -> List[ Dict[str, Any] ]:
 	items: List[ Dict[str, Any] ] = []
 	for item in row:
-		if table == 'games':
+		if table in _tables.keys():
+			template = _tables[table]  # get the dictionary template from the known tables
 			items.append(
 				{
-					'guildID': item[ 0 ],
-					'gameID': item[ 1 ],
-					'gameType': item[ 2 ],
-					'userIDs': item[ 3 ],
-					'gameData': item[ 4 ],
-					'live': item[ 5 ]
-				}
-			)
-		elif table == 'users':
-			items.append(
-				{
-					'guildID': item[ 0 ],
-					'discordID': item[ 1 ],
-					'personalPrefix': item[ 2 ],
-					'permissions': item[ 3 ]
-				}
-			)
-		elif table == 'stats':
-			items.append(
-				{
-					'guildID': item[ 0 ],
-					'userID': item[ 1 ],
-					'gameType': item[ 2 ],
-					'wins': item[ 3 ],
-					'losses': item[ 4 ],
-					'ties': item[ 5 ]
-				}
-			)
-		elif table == 'ranks':
-			items.append(
-				{
-					'rank': item[ 0 ],
-					'minPoints': item[ 1 ],
-					'maxPoints': item[ 2 ]
-				}
-			)
-		elif table == 'gameTypes':
-			items.append(
-				{
-					'gameType': item[ 0 ]
-				}
-			)
-		elif table == 'gameRequests':
-			items.append(
-				{
-					'userID': item[ 0 ],
-					'user2ID': item[ 1 ],
-					'guildID': item[ 2 ],
-					'channelID': item[ 3 ]
+					# associate a key with a value
+					template[pos]: value for pos, value in enumerate(item)
 				}
 			)
 		else:
 			items.append( { pos: value for pos, value in enumerate(item) } )
 
-	if convertSingle and len(items) == 1:
-		return items[0]
 	return items

@@ -66,6 +66,7 @@ class Guild(AbstractGuild):
 				PapGame.serializeGameData( game.gameData ),
 				game.live
 			)
+		self.db.save()
 
 	def getUser( self, userID: int ) -> PapUser:
 		"""
@@ -113,6 +114,7 @@ class Guild(AbstractGuild):
 				user.personalPrefix,
 				PapUser.serializePermissions(user.permissions)
 			)
+		self.db.save()
 
 	def hasGame( self, gameID: str, checkCache: bool = True, gameType: Optional[ str ] = 'any' ) -> bool:
 		"""
@@ -331,11 +333,9 @@ class Guild(AbstractGuild):
 				self.guildID,
 				user2ID
 			)
-		else:
-			return False
-
-		self.db.save()
-		return True
+			self.db.save()
+			return True
+		return False
 
 	def _checkGameRequest( self, userID: int ):
 		"""
@@ -371,9 +371,9 @@ class Guild(AbstractGuild):
 				userID,
 				self.guildID
 			)
-		else:
-			return False
-		return True
+			self.db.save()
+			return True
+		return False
 
 	def getGameRequest(self, userID: int):
 		"""
@@ -424,6 +424,7 @@ class Guild(AbstractGuild):
 				userID,
 				gameType
 			)
+		self.db.save()
 
 
 def _calculateRankForStats( wins: int, losses: int, ties: int ) -> int:

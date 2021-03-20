@@ -1,12 +1,12 @@
 import importlib
 import importlib.util
-from botframework.eventSystem import Listener
 from pathlib import Path
 from types import ModuleType
 from typing import Dict
 
 from core import moduleUtils, utils
 from core.utils import placeHolderFunc
+from core.eventSystem import Listener
 
 __games: Dict[str, ModuleType] = {}
 
