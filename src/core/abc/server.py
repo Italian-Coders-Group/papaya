@@ -22,6 +22,22 @@ class AbstractServer(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
+	async def handleReactionAdd( self, reaction: discord.Reaction, user: discord.Member ) -> None:
+		"""
+		Handles reacting to a message with an emoji
+		:param reaction: the reaction object
+		:param user: the user who caused this event
+		"""
+
+	@abstractmethod
+	async def handleReactionRemove( self, reaction: discord.Reaction, user: discord.Member ) -> None:
+		"""
+		Handles removing a reaction to a message
+		:param reaction: the reaction object
+		:param user: the user who caused this event
+		"""
+
+	@abstractmethod
 	def Can( self, user: discord.User, permission: str ) -> bool:
 		"""
 		Check if an user can do something

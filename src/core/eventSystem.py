@@ -1,9 +1,9 @@
 from types import FunctionType
 from typing import Dict, Union
 
-from botframework.abc.eventSystem import AbstractEventSystem
-from botframework.logging import get_logger
-from botframework.types import ListenerList, Event, Coroutine
+from core.abc.eventSystem import AbstractEventSystem
+from core.logging import get_logger
+from core.types import ListenerList, Event, Coroutine
 
 logger = get_logger('EventSystem')
 
