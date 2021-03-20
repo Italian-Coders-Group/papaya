@@ -4,7 +4,7 @@ import sys
 import core
 
 core.logging.init_logging(
-	filename='../logs/latest.log'
+	filename='./logs/latest.log'
 )
 
 
