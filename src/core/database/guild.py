@@ -91,8 +91,8 @@ class Guild(AbstractGuild):
 		Update the database by adding this user or by updating the saved user with this one
 		:param user: a PapUser object with new values
 		"""
-		self._userCache[ user.userID ] = user
-		if self.hasUser( user.userID, checkCache=False ):
+		self._userCache[ user.discordID ] = user
+		if self.hasUser( user.discordID, checkCache=False ):
 			self.db.makeRequest(
 				# EXPLANATION: update an existing user
 				'UPDATE users SET personalPrefix = ?, permissions = ? WHERE guildID = ? AND discordID = ?',
@@ -101,7 +101,7 @@ class Guild(AbstractGuild):
 				PapUser.serializePermissions(user.permissions),
 				# identification
 				self.guildID,
-				user.userID
+				user.discordID
 			)
 		else:
 			self.db.makeRequest(
@@ -109,7 +109,7 @@ class Guild(AbstractGuild):
 				'INSERT INTO users (guildID, discordID, personalPrefix, permissions) VALUES (?, ?, ?, ?)',
 				# identification
 				self.guildID,
-				user.userID,
+				user.discordID,
 				# data
 				user.personalPrefix,
 				PapUser.serializePermissions(user.permissions)
@@ -142,22 +142,22 @@ class Guild(AbstractGuild):
 		)
 		return len( games ) > 0
 
-	def hasUser( self, userID: int, checkCache: bool = True ) -> bool:
+	def hasUser( self, discordID: int, checkCache: bool = True ) -> bool:
 		"""
 		Checks if has an user with that ID
-		:param userID: the user ID to search for
+		:param discordID: the user ID to search for
 		:param checkCache: True if should check the cache too
 		:return: True if we have it
 		"""
 		if checkCache:
-			if userID in self._userCache.keys():
+			if discordID in self._userCache.keys():
 				return True
 		users: list = self.db.makeRequest(
 			# EXPLANATION: select all games that are from this guild, are of type gameType and
 			# their id is gameID
 			'SELECT * FROM users WHERE guildID = ? AND discordID = ?',
 			self.guildID,
-			userID
+			discordID
 		)
 		return len( users ) > 0
 
@@ -194,11 +194,11 @@ class Guild(AbstractGuild):
 
 		return lastGameTypes
 
-	def getGamesForUser( self, userID: int, gameType: str = 'any', user: Optional[PapUser] = None ) -> List[PapGame]:
+	def getGamesForUser( self, discordID: int, gameType: str = 'any', user: Optional[PapUser] = None ) -> List[PapGame]:
 		"""
 		Returns a list with all games that this user has played
 		:param gameType: the type of the game, use "any" for any type
-		:param userID: the user to get the games from, put None if use use a PapUser in the user param
+		:param discordID: the user to get the games from, put None if use use a PapUser in the user param
 		:param user: ALTERNATIVE: a PapUser
 		:return: list of games
 		"""
@@ -209,12 +209,12 @@ class Guild(AbstractGuild):
 			'SELECT * FROM games WHERE guildID = ? AND gameType = ? AND userIDs LIKE ?',
 			self.guildID,
 			gameType,
-			f'%{userID}%'
+			f'%{discordID}%'
 		) if gameType != 'any' else self.db.makeRequest(
 			# EXPLANATION: select all games that are from this guild and include userID in userIDs
 			'SELECT * FROM games WHERE guildID = ? AND userIDs LIKE ?',
 			self.guildID,
-			f'%{userID}%'
+			f'%{discordID}%'
 		)
 		for game in dbGames:
 			if str(userID) in game[3].split(','):
@@ -223,11 +223,11 @@ class Guild(AbstractGuild):
 				)
 		return games
 
-	def getLiveGameForUser( self, userID: int, gameType: str = 'any', user: Optional[ PapUser ] = None ) -> List[ PapGame ]:
+	def getLiveGameForUser( self, discordID: int, gameType: str = 'any', user: Optional[ PapUser ] = None ) -> List[ PapGame ]:
 		"""
 		Returns a list with all live games that this user is playing
 		:param gameType: the type of the game, use "any" for any type
-		:param userID: the user to get the games from, put None if use use a PapUser in the user param
+		:param discordID: the user to get the games from, put None if use use a PapUser in the user param
 		:param user: ALTERNATIVE: a PapUser
 		:return: list of games
 		"""
@@ -238,24 +238,24 @@ class Guild(AbstractGuild):
 			'SELECT * FROM games WHERE live = 1 AND guildID = ? AND gameType = ? AND userIDs LIKE ?',
 			self.guildID,
 			gameType,
-			f'%{userID}%'
+			f'%{discordID}%'
 		) if gameType != 'any' else self.db.makeRequest(
 			# EXPLANATION: select all games that are live, from this guild and include userID in userIDs
 			'SELECT * FROM games WHERE live = 1 AND guildID = ? AND userIDs LIKE ?',
 			self.guildID,
-			f'%{userID}%'
+			f'%{discordID}%'
 		)
 		for game in dbGames:
-			if str( userID ) in game[ 3 ].split( ',' ):
+			if str( discordID ) in game[ 3 ].split( ',' ):
 				games.append(
 					PapGame( **game )
 				)
 		return games
 
-	def getStatsForUserInGuild(self, userID: int, gameType: str = "any") -> PapStats:
+	def getStatsForUserInGuild(self, discordID: int, gameType: str = "any") -> PapStats:
 		"""
 		Returns a user in the guild with his stats, None if not found
-		:param userID:
+		:param discordID:
 		:param gameType:
 		:return: user
 		"""
@@ -263,22 +263,22 @@ class Guild(AbstractGuild):
 
 		user = self.db.makeRequest(
 			'SELECT guildID, userID,'
-			'(SELECT SUM(wins) FROM stats WHERE userID = ? AND guildID = ?) AS totalWins,'
-			'(SELECT SUM(losses) FROM stats WHERE userID = ? AND guildID = ?) AS totalLoses,'
-			'(SELECT SUM(ties) FROM stats WHERE userID = ? AND guildID = ?) AS totalTies'
-			' FROM stats WHERE userID = ? AND guildID = ?',
-			userID,
+			'(SELECT SUM(wins) FROM stats WHERE discordID = ? AND guildID = ?) AS totalWins,'
+			'(SELECT SUM(losses) FROM stats WHERE discordID = ? AND guildID = ?) AS totalLoses,'
+			'(SELECT SUM(ties) FROM stats WHERE discordID = ? AND guildID = ?) AS totalTies'
+			' FROM stats WHERE discordID = ? AND guildID = ?',
+			discordID,
 			self.guildID,
-			userID,
+			discordID,
 			self.guildID,
-			userID,
+			discordID,
 			self.guildID,
-			userID,
+			discordID,
 			self.guildID,
 			table='stats'
 		) if gameType == "any" else self.db.makeRequest(
-			'SELECT * FROM stats WHERE userID = ? AND guildID = ? AND gameType = ?',
-			userID,
+			'SELECT * FROM stats WHERE discordID = ? AND guildID = ? AND gameType = ?',
+			discordID,
 			self.guildID,
 			validType,
 			table='stats'
@@ -316,7 +316,7 @@ class Guild(AbstractGuild):
 
 		return rank[0][0] if not None else "no rank"
 
-	def makeGameRequest(self, userID: int, user2ID: int,  channelID: int):
+	def makeGameRequest(self, discordID: int, discordID2: int,  channelID: int):
 		"""
 		Make an accept action
 		:param channelID:
@@ -375,7 +375,7 @@ class Guild(AbstractGuild):
 			return True
 		return False
 
-	def getGameRequest(self, userID: int):
+	def getGameRequest(self, userID: int) -> Dict[str, Any]:
 		"""
 		returns an accept request
 		:param userID:
@@ -388,11 +388,9 @@ class Guild(AbstractGuild):
 			table='gameRequest'
 		)
 		if len(requests) > 0:
-			returnRequest = requests[0]
+			return requests[0]
 		else:
-			returnRequest = [None, None, None]
-
-		return returnRequest
+			return {'userID': None,	'user2ID': None, 'guildID': None, 'channelID': None }
 
 	def saveStatsForUserInGuild(self, userID: str, gameType: str, stat: str):
 		"""
