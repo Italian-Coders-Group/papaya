@@ -80,7 +80,7 @@ class Database(AbstractDatabase):
 
 	def save( self ) -> None:
 		"""	Commit changes to the database file	"""
-		if self.backend is not None:
+		if getattr(self, 'backend', None) is not None:
 			self.backend.save()
 
 	def __del__( self ):
