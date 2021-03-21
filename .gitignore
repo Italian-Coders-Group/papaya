@@ -8,3 +8,4 @@ resources/database.db-journal
 .venv/
 environment
 start
+src/modules/tic_tac_toe/src/imagesToSend
