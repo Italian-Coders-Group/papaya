@@ -40,12 +40,12 @@ class SqlBackend(AbstractBackend):
 			'''
 			CREATE TABLE IF NOT EXISTS stats (
 				guildID INT NOT NULL,
-				userID TEXT NOT NULL,
+				discordID TEXT NOT NULL,
 				gameType TEXT NOT NULL,
 				wins INT NOT NULL DEFAULT 0,
 				losses INT NOT NULL DEFAULT 0,
 				ties INT NOT NULL DEFAULT 0,
-				CONSTRAINT PK_stats PRIMARY KEY (guildID, userID, gameType)
+				CONSTRAINT PK_stats PRIMARY KEY (guildID, discordID, gameType)
 			)
 			'''
 		)
@@ -69,12 +69,12 @@ class SqlBackend(AbstractBackend):
 		self.cursor.execute(
 			'''
 			CREATE TABLE IF NOT EXISTS gameRequests (
-				userID text NOT NULL,
-				user2ID text NOT NULL,
+				discordID text NOT NULL,
+				discord2ID text NOT NULL,
 				guildID int NOT NULL,
 				channelID int not null,
 				gameType text not null,
-				CONSTRAINT PK_gameRequests PRIMARY KEY (userID, user2ID, guildID, gameType)
+				CONSTRAINT PK_gameRequests PRIMARY KEY (discordID, discord2ID, guildID, gameType)
 			)
 			'''
 		)
