@@ -1,14 +1,14 @@
 import sys
 from importlib import _bootstrap
 from types import ModuleType
-from typing import Dict
+from typing import Dict, Any, Union
 
 from core import eventSystem
 
 _RELOADING = {}
 
 
-def reload(module: ModuleType, additionalSearchDict: Dict[str, ModuleType] = None):
+def reload(module: Union[ModuleType, Any], additionalSearchDict: Dict[str, ModuleType] = None):
 	"""
 	Reload the module and return it.
 
