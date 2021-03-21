@@ -7,8 +7,7 @@ from lzma import compress, decompress
 import PIL.Image
 import discord
 
-from core.abc.fileSystem import AbstractFileSystem, AbstractFile, openingReadMode, openingWriteMode, AbstractFolder, \
-	fileType
+from core.abc.fileSystem import AbstractFileSystem, AbstractFile, openingReadMode, openingWriteMode, AbstractFolder, fileType
 from core.exception import FileSystemError
 
 
@@ -452,6 +451,3 @@ class FileSystem(AbstractFileSystem):
 				return True
 
 		return False
-
-
-assetsFs: FileSystem = FileSystem('./assets')

@@ -1,11 +1,11 @@
 __pycache__
-.env
 logs
+.idea
+.venv/
 resources/database.db
 resources/database.db-journal
-.idea
-.venv/pyvenv.cfg
-.venv/
+src/bot.py
+.env
 environment
 start
 src/modules/tic_tac_toe/src/imagesToSend

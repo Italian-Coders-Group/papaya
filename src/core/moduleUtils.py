@@ -3,6 +3,8 @@ from importlib import _bootstrap
 from types import ModuleType
 from typing import Dict
 
+from core import eventSystem
+
 _RELOADING = {}
 
 
@@ -36,6 +38,10 @@ def reload(module: ModuleType, additionalSearchDict: Dict[str, ModuleType] = Non
 		if sys.modules.get(name) is not module:
 			msg = "module {} not found in sys.modules or in additional search dict"
 			raise ImportError(msg.format(name), name=name)
+
+	# remove all events listeners of this module
+	eventSystem.EventSystem.INSTANCE.removeListeners( module.__name__ )
+
 	if name in _RELOADING:
 		return _RELOADING[name]
 	_RELOADING[name] = module

@@ -1,16 +1,14 @@
+from dataclasses import dataclass
+
 from typing import List
 
 
+@dataclass
 class PapUser:
 
-	userID: int
+	discordID: int
 	personalPrefix: str
 	permissions: List[bool]
-
-	def __init__( self, discordID: int, personalPrefix: str, permissions: str ):
-		self.userID = discordID
-		self.personalPrefix = personalPrefix
-		self.permissions = PapUser.deserializePermissions(permissions)
 
 	@staticmethod
 	def serializePermissions( perms: List[bool] ) -> str:

@@ -6,6 +6,7 @@ from typing import Dict
 
 from core import moduleUtils, utils
 from core.utils import placeHolderFunc
+from core.eventSystem import Listener
 
 __games: Dict[str, ModuleType] = {}
 
@@ -20,7 +21,8 @@ def initializeGames():
 		__games[moduleName] = module
 
 
-def reloadGames():
+@Listener
+async def onReload():
 	"""	Reload all instatiated games """
 	for game in utils.copyList( __games.keys() ):
 		getattr(__games[game], 'reloadModules', placeHolderFunc)()

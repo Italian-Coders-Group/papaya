@@ -23,11 +23,8 @@ def color_palette():
 	return choice(colors)
 
 
-def getAuthors() -> Callable[[], Tuple[int, int]]:
-	def authors() -> Tuple[int, int]:
-		# ENDER, MR
-		return 350938367405457408, 326436392940863499
-	return authors
+def getAuthors() -> Callable[ [], Tuple[int, int] ]:
+	return lambda: ( 350938367405457408, 326436392940863499 )
 
 
 def embed(title: str, content: str, color: Color) -> Embed:
@@ -133,6 +130,11 @@ def genRandomString( size: int = 5, upper: bool = False, lower: bool = False, mi
 	return ''.join(choice(chars) for _ in range(size))
 
 
-def placeHolderFunc(ph0=None, ph1=None):
+def placeHolderFunc(*args, **kwargs):
 	""" Just a placeholder for functions that require a function """
-	pass
+	return None
+
+
+async def placeHolderCoro(*args, **kwargs):
+	""" Just a placeholder for functions that require a coroutine """
+	return None

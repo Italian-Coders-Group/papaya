@@ -1,6 +1,6 @@
 from .Game import Game, check_for_win
 from .AI import AI
-from core.commandList import Command
+from core.commandSystem import Command
 from core.abc.server import AbstractServer
 from core.database.database import Database
 from core.dataclass.PapGame import PapGame
