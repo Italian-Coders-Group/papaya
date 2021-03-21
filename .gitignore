@@ -8,3 +8,4 @@ src/bot.py
 .env
 environment
 start
+src/modules/tic_tac_toe/src/imagesToSend
