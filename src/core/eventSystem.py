@@ -54,7 +54,7 @@ class EventSystem(AbstractEventSystem):
 			self._listeners[ event ] = []
 
 		if len( self._listeners[event ] ) == 0:
-			logger.warning(f'Invoked event "{event}" has no _listeners!')
+			logger.warning(f'Invoked event "{event}" has no listeners!')
 
 		for listener in self._listeners[event ]:
 			try:
