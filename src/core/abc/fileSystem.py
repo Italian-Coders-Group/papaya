@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, Union, TextIO
+from typing import Dict, Union, TextIO, List
 
 import discord
 from PIL.Image import Image
@@ -227,7 +227,7 @@ class AbstractFile(metaclass=ABCMeta):
 	def decompress( file: Union[ 'AbstractFile', bytes ] ) -> 'AbstractFile':
 		"""
 		Decompresses a previusly LZMA compressed File object or bytes.
-		:param compFile: compressed File or bytes
+		:param file: compressed File or bytes
 		:return: decompressed File object
 		"""
 		pass
@@ -244,7 +244,8 @@ class AbstractFile(metaclass=ABCMeta):
 
 class AbstractFolder( metaclass=ABCMeta ):
 
-	path: Path = None
+	_path: Path = None
+	_parentFS: 'AbstractFileSystem' = None
 
 	@abstractmethod
 	def walk( self, ftype: fileType = fileType.both ) -> Union[AbstractFile, 'AbstractFolder']:
@@ -263,7 +264,32 @@ class AbstractFolder( metaclass=ABCMeta ):
 
 	@abstractmethod
 	def isFolder( self ) -> bool:
-		""" returns True if this object represents a folder """
+		""" Returns True if this object represents a folder """
+		pass
+
+	@abstractmethod
+	def asFileSystem( self ) -> 'AbstractFileSystem':
+		""" Returns this folder as a FileSystem obejct """
+		pass
+
+	@abstractmethod
+	def listContents( self ) -> List[ Union[ AbstractFile, 'AbstractFolder'] ]:
+		""" Returns a list with all the containing files/folders """
+		pass
+
+	@abstractmethod
+	def getPath( self ) -> Path:
+		""" Returns the path of this folder """
+		pass
+
+	@abstractmethod
+	def getParent( self ) -> 'AbstractFolder':
+		""" Returns the parent Folder object, if possible """
+		pass
+
+	@abstractmethod
+	def getParentFS( self ) -> 'AbstractFolder':
+		""" Returns the parent FileSystem object, if possible """
 		pass
 
 	@abstractmethod
@@ -277,8 +303,8 @@ class AbstractFolder( metaclass=ABCMeta ):
 
 class AbstractFileSystem(metaclass=ABCMeta):
 
-	sandbox: Path
-	fileForm: AbstractFolder = None
+	_sandbox: Path
+	_folderForm: AbstractFolder = None
 	cache: Dict[str, Union[ AbstractFile, AbstractFolder, 'AbstractFileSystem' ] ]
 
 	@abstractmethod
@@ -308,6 +334,11 @@ class AbstractFileSystem(metaclass=ABCMeta):
 		:param path: folder path
 		:return: Folder object
 		"""
+		pass
+
+	@abstractmethod
+	def getParent( self ) -> 'AbstractFileSystem':
+		""" Returns the parent FileSystem object, if possible """
 		pass
 
 	@abstractmethod

@@ -1,7 +1,7 @@
 from io import BytesIO,  TextIOWrapper
 from pathlib import Path
 from time import time
-from typing import Union, TextIO
+from typing import Union, TextIO, List
 from lzma import compress, decompress
 
 import PIL.Image
@@ -288,17 +288,18 @@ class File(AbstractFile):
 
 class Folder(AbstractFolder):
 
-	def __init__( self, path: Union[Path, str] ):
+	def __init__( self, parentFS: AbstractFileSystem, path: Union[Path, str] ):
 		if not isinstance(path, Path):
 			path = Path(path)
 		if not path.is_dir():
 			if path.exists():
 				raise FileSystemError('The provided path is not a folder!')
-		self.path = path
+		self._path = path
+		self._parentFS = parentFS
 
 	def walk( self, ftype: fileType = fileType.both ) -> Union[AbstractFile, AbstractFolder]:
 		""" walk on all folders and files, basically same as Folder.__iter__(), but with a fancy name """
-		for file in self.path.glob('*'):
+		for file in self._path.glob('*'):
 			if file.is_dir():
 				if ftype is fileType.folder or fileType.both:
 					yield Folder( file )
@@ -308,22 +309,37 @@ class Folder(AbstractFolder):
 
 	def exists( self ) -> bool:
 		""" Checks if this folder exist on disk """
-		return self.path.exists()
+		return self._path.exists()
 
 	def touch( self ) -> None:
 		"""	Creates this folder on disk """
-		self.path.mkdir()
+		self._path.mkdir()
 
 	def isFolder( self ) -> bool:
 		""" returns True if this object represents a folder """
 		return True
 
+	def asFileSystem( self ) -> 'AbstractFileSystem':
+		""" Returns this folder as a FileSystem obejct """
+		return self._parentFS.get( self._path.name )
+
+	def listContents( self ) -> List[ Union[ AbstractFile, 'AbstractFolder' ] ]:
+		""" Returns a list with all the containing files/folders """
+
+	def getParent( self ) -> 'AbstractFolder':
+		""" Returns the parent Folder object, if possible """
+		pass
+
+	def getParentFS( self ) -> 'AbstractFolder':
+		""" Returns the parent FileSystem object, if possible """
+		pass
+
 	def __str__(self) -> str:
-		return f'Folder object. path: { str( self.path.resolve() if isinstance( self.path, Path ) else None ) }'
+		return f'Folder object. path: { str( self._path.resolve() if isinstance( self._path, Path ) else None ) }'
 
 	def __iter__( self ):
 		self.__tmp_iter_array_index = 0
-		self.__tmp_iter_array = [ file for file in self.path.glob( '*' ) ]
+		self.__tmp_iter_array = [ file for file in self._path.glob( '*' ) ]
 		return self
 
 	def __next__( self ) -> Union[AbstractFile, AbstractFolder]:
@@ -336,10 +352,7 @@ class Folder(AbstractFolder):
 		raise StopIteration
 
 	def __contains__(self, item):
-		for path in self.path.glob('*'):
-			if path.name == item:
-				return True
-		return False
+		return self._path.joinpath( item ).exists()
 
 
 class FileSystem(AbstractFileSystem):
@@ -347,7 +360,7 @@ class FileSystem(AbstractFileSystem):
 	def __init__( self, path: Union[Path, str] ):
 		if not isinstance(path, Path):
 			path = Path(path)
-		self.sandbox = path
+		self._sandbox = path
 		self.cache = {}
 
 	def get( self, path: Union[Path, str], ftype: fileType = fileType.file, layer: int = 0 ) -> Union[AbstractFile, AbstractFolder]:
@@ -365,14 +378,14 @@ class FileSystem(AbstractFileSystem):
 			if isinstance( self.cache[ path.parts[layer] ], FileSystem):
 				return self.cache[ path.parts[layer] ].getAsset(path, layer + 1)
 		try:
-			path.relative_to(self.sandbox)
+			path.relative_to(self._sandbox)
 		except:
-			raise FileSystemError(f'{str(path)} its not inside {str( self.sandbox )}')
+			raise FileSystemError(f'{str(path)} its not inside {str( self._sandbox )}')
 
-		relPath = path.relative_to(self.sandbox)
+		relPath = path.relative_to(self._sandbox)
 
 		if '..' in path.parts:
-			raise FileSystemError( f'{str( relPath )} its not inside {str( self.sandbox )}' )
+			raise FileSystemError( f'{str( relPath )} its not inside {str( self._sandbox )}' )
 
 		if len( path.parts ) > layer:
 			tmp = Path( '/'.join( path.parts[:layer + 1] ) )
@@ -425,12 +438,12 @@ class FileSystem(AbstractFileSystem):
 		Get this filesystem as folder object
 		:return: folder object representing this filesystem path
 		"""
-		self.fileForm = Folder( self.sandbox )
-		return self.fileForm
+		self._folderForm = Folder( self._sandbox )
+		return self._folderForm
 
 	def __iter__( self ):
 		self.__tmp_iter_array_index = 0
-		self.__tmp_iter_array = [ file for file in self.sandbox.glob( '*' ) ]
+		self.__tmp_iter_array = [ file for file in self._sandbox.glob( '*' ) ]
 		return self
 
 	def __next__( self ) -> Union[ AbstractFile, AbstractFolder ]:
@@ -446,8 +459,4 @@ class FileSystem(AbstractFileSystem):
 		if item in self.cache.keys():
 			return True
 
-		for path in self.sandbox.glob('*'):
-			if path.name == item:
-				return True
-
-		return False
+		return self._sandbox.joinpath(item).exists()
