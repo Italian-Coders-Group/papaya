@@ -252,6 +252,32 @@ class Guild(AbstractGuild):
 				)
 		return games
 
+	def getLiveGamesForGuild( self ) -> List[ PapGame ]:
+		"""
+		Returns the list of current games in the guild.
+		:return List of games
+		"""
+
+		return_list = []
+
+		game_list = self.db.makeRequest(
+			'SELECT * FROM games WHERE guildID = ? AND live = 1',
+			self.guildID
+		)
+
+		if len(game_list) == 0:
+			raise GameNotFound
+		
+		for game in game_list:
+			return_list.append(
+				PapGame(
+					**game
+				)
+			)
+
+		return return_list
+
+
 	def getStatsForUserInGuild(self, discordID: int, gameType: str = "any") -> PapStats:
 		"""
 		Returns a user in the guild with his stats, None if not found
