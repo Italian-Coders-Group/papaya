@@ -100,3 +100,11 @@ async def cancel(server: AbstractServer, msg: Message):
     else:
         server.GetDatabase().delAccept(msg.author.id)
         await msg.channel.send("Your game has been cancelled.")
+
+
+@Command
+async def viewgames(server: AbstractServer, msg: Message):
+    server_games = server.GetDatabase().getLiveGamesForGuild()
+    # EXPLANATION: This should result in a string, which puts al the "vs" stuff. Idk anymore
+    output = '\n'.join(vs[2] for vs in server_games)
+    await msg.channel.send(f"Current Games in this server: {output}")
