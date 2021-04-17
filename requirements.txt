@@ -1,3 +1,4 @@
-discord.py==1.6.0
+discord.py==1.7.1
 requests==2.25.1
-Pillow==8.1.2
+Pillow==8.2.0
+discordslashcommands==1.0.3

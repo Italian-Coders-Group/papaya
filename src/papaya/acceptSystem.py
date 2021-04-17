@@ -2,6 +2,8 @@
 # MR RE-EDIT CUZ ENDER BROKE IT BY RE-EDITING CUZ I BROKE IT
 # STILL NOT WORKING CAUSE DB STUFF
 # EDER EDIT CUZ MR AND THE DB BROKE IT
+from typing import Any, Dict
+
 from discord import Message
 
 from core import utils
@@ -14,46 +16,46 @@ from core.exception import GameRequestNotFound
 
 class AcceptSystem:
 
+	@staticmethod
 	@Listener
-	async def onMessage(self, server: AbstractServer, msg: Message):
+	async def onMessage( server: AbstractServer, msg: Message ):
 
 		database: AbstractGuild = server.GetDatabase()
 
 		try:
-			acceptList: list = database.getGameRequest(msg.author.id)
-			accepted: bool
+			acceptObj: Dict[str, Any] = database.getGameRequest( msg.author.id )
+			accepted: bool = None
 
-			if (acceptList[3] == msg.channel.id) and ("accept" in msg.content):
+			if (acceptObj['channelID'] == msg.channel.id) and ("accept" in msg.content):
 				database.delGameRequest(msg.author.id)
 				accepted = True
-			elif (acceptList[3] == msg.channel.id) and ("deny" in msg.content):
+			elif (acceptObj['channelID'] == msg.channel.id) and ("deny" in msg.content):
 				database.delGameRequest(msg.author.id)
 				accepted = False
 
-			if acceptList:
-				if accepted:
-					acceptedEmbed = utils.embed(
-						title="Game accepted. Prepare",
-						content=f"This game is between {msg.author.mention} and his opponent TODO: get actual names, ty",
-						color=utils.getColor(RGB="0,255,0")
+			if accepted:
+				acceptedEmbed = utils.embed(
+					title="Game accepted. Prepare",
+					content=f"This game is between {msg.author.mention} and his opponent TODO: get actual names, ty",
+					color=utils.getColor(RGB="0,255,0")
+				)
+				await msg.channel.send(embed=acceptedEmbed)
+				game = database.getGamesForUser(msg.author.id)[0]
+				database.setGame(
+					PapGame(
+						gameID=game.gameID,
+						gameType=game.gameType,
+						userIDs=game.userIDs,
+						gameData=game.gameData,
+						live=True
 					)
-					await msg.channel.send(embed=acceptedEmbed)
-					game = database.getGamesForUser(msg.author.id)[0]
-					database.setGame(
-						PapGame(
-							gameID=game.gameID,
-							gameType=game.gameType,
-							userIDs=game.userIDs,
-							gameData=game.gameData,
-							live=True
-						)
-					)
-				else:
-					deniedEmbed = utils.embed(
-						title="Game denied.",
-						content="This game is cancelled.",
-						color=utils.getColor(RGB="255,0,0")
-					)
-					await msg.channel.send(embed=deniedEmbed)
+				)
+			elif accepted is not None:
+				deniedEmbed = utils.embed(
+					title="Game denied.",
+					content="This game is cancelled.",
+					color=utils.getColor(RGB="255,0,0")
+				)
+				await msg.channel.send(embed=deniedEmbed)
 		except GameRequestNotFound:
 			pass

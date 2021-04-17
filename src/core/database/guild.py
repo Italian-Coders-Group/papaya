@@ -217,7 +217,7 @@ class Guild(AbstractGuild):
 			f'%{discordID}%'
 		)
 		for game in dbGames:
-			if str(userID) in game[3].split(','):
+			if str(discordID) in game[3].split(','):
 				games.append(
 					PapGame( **game )
 				)
@@ -262,7 +262,7 @@ class Guild(AbstractGuild):
 		validType = 'any' if not self.hasGameType( gameType ) else gameType
 
 		user = self.db.makeRequest(
-			'SELECT guildID, userID,'
+			'SELECT guildID, discordID,'
 			'(SELECT SUM(wins) FROM stats WHERE discordID = ? AND guildID = ?) AS totalWins,'
 			'(SELECT SUM(losses) FROM stats WHERE discordID = ? AND guildID = ?) AS totalLoses,'
 			'(SELECT SUM(ties) FROM stats WHERE discordID = ? AND guildID = ?) AS totalTies'
@@ -320,18 +320,18 @@ class Guild(AbstractGuild):
 		"""
 		Make an accept action
 		:param channelID:
-		:param user2ID:
-		:param userID:
+		:param discordID:
+		:param discordID2:
 		:return:
 		"""
 
-		check = self._checkAccept( userID )
+		check = self._checkAccept( discordID )
 		if not check:
 			self.db.makeRequest(
-				'INSERT INTO gameRequests(userID, guildID, channelID) VALUES (?, ?, ?)',
-				userID,
+				'INSERT INTO gameRequests(discordID, guildID, channelID) VALUES (?, ?, ?)',
+				discordID,
 				self.guildID,
-				user2ID
+				channelID
 			)
 			self.db.save()
 			return True
@@ -345,7 +345,7 @@ class Guild(AbstractGuild):
 		"""
 
 		check = self.db.makeRequest(
-			'SELECT * FROM gameRequests WHERE (userID = ? OR user2ID = ?)  AND guildID = ?',
+			'SELECT * FROM gameRequests WHERE (discordID = ? OR discord2ID = ?)  AND guildID = ?',
 			userID,
 			userID,
 			self.guildID
@@ -357,18 +357,16 @@ class Guild(AbstractGuild):
 
 		return returnCheck
 
-	def delGameRequest(self, userID: int):
+	def delGameRequest(self, discordID: int):
 		"""
 		Deletes accept
-		:param userID:
-		:return:
 		"""
-		check = self._checkAccept( userID )
+		check = self._checkAccept( discordID )
 		if check:
 			self.db.makeRequest(
-				"DELETE FROM gameRequests WHERE (userID = ? OR user2ID = ?) AND guildID = ?",
-				userID,
-				userID,
+				"DELETE FROM gameRequests WHERE (discordID = ? OR discord2ID = ?) AND guildID = ?",
+				discordID,
+				discordID,
 				self.guildID
 			)
 			self.db.save()
@@ -382,7 +380,7 @@ class Guild(AbstractGuild):
 		:return:
 		"""
 		requests = self.db.makeRequest(
-			'SELECT * FROM gameRequests WHERE userID = ? AND guildID = ?',
+			'SELECT * FROM gameRequests WHERE discordID = ? AND guildID = ?',
 			userID,
 			self.guildID,
 			table='gameRequest'
@@ -392,36 +390,21 @@ class Guild(AbstractGuild):
 		else:
 			return {'userID': None,	'user2ID': None, 'guildID': None, 'channelID': None }
 
-	def saveStatsForUserInGuild(self, userID: str, gameType: str, stat: str):
+	def saveStatsForUserInGuild(self, userID: str, gameType: str, loss: bool = False, win: bool = False, tie: bool = False):
 		"""
 		Updates +1 if win, tie or loss is True.
 		:param gameType:
 		:param userID:
-		:param stat:
 		:return:
 		"""
 
-		if stat == 'win':
-			self.db.makeRequest(
-				"UPDATE stats SET wins = wins + 1 WHERE guildID = ? AND userID = ? AND gameType = ?",
-				self.guildID,
-				userID,
-				gameType
-			)
-		elif stat == 'loss':
-			self.db.makeRequest(
-				"UPDATE stats SET losses = losses + 1 WHERE guildID = ? AND userID = ? AND gameType = ?",
-				self.guildID,
-				userID,
-				gameType
-			)
-		else:
-			self.db.makeRequest(
-				'UPDATE stats SET ties = ties + 1 WHERE guildID = ? AND userID = ? AND gameType = ?',
-				self.guildID,
-				userID,
-				gameType
-			)
+		self.db.makeRequest(
+			'UPDATE stats SET wins = wins + ?, losses = losses + ?, ties = ties + ? WHERE guildID = ? AND discordID = ? AND gameType = ?',
+			int(loss), int(win), int(tie),
+			self.guildID,
+			userID,
+			gameType
+		)
 		self.db.save()
 
 

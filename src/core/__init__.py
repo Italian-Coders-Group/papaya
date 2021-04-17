@@ -89,13 +89,17 @@ class Bot:
 		# reloads the server instances and modules
 		if msg.content == '$$reload' and msg.author.id in utils.getAuthors()():
 			logger.warning(f'[RELOAD] reload issued in {msg.guild.name} by {msg.author.name}!')
-			logger.info('[RELOAD] reloading!')
 			await msg.channel.send('Reloading!')
 			# clear all servers
 			self.servers.clear()
 			# reload modules
-			import defaultCommands
-			import moduleUtils
+			try:
+				from . import defaultCommands
+				from . import moduleUtils
+			except Exception as e:
+				await msg.channel.send(f'something is very wrong')
+				await msg.channel.send( embed=utils.getTracebackEmbed(e) )
+				return
 			try:
 				# utils may be imported by the command system, reload it first
 				moduleUtils.reload( utils )

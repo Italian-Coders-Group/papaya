@@ -128,13 +128,12 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 
 	@abstractmethod
-	def makeGameRequest(self, userID: int, user2ID: int, channelID: int, gameType: str):
+	def makeGameRequest(self, discordID: int, discordID2: int,  channelID: int):
 		"""
 		Make an accept action
-		:param user2ID:
+		:param discordID:
+		:param discordID2:
 		:param channelID:
-		:param userID:
-		:param gameType:
 		:return:
 		"""
 

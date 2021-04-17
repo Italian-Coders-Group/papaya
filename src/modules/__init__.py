@@ -7,6 +7,11 @@ from typing import Dict
 from core import moduleUtils, utils
 from core.utils import placeHolderFunc
 from core.eventSystem import Listener
+import papaya.acceptSystem
+
+
+papaya.acceptSystem.AcceptSystem()
+
 
 __games: Dict[str, ModuleType] = {}
 

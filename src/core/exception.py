@@ -24,5 +24,5 @@ class GameRequestAlreadyLive(Exception):
 
 
 class GameRequestNotFound(Exception):
-	""" This exception is raised if a gamerequest is not found """
+	""" This exception is raised if a game request is not found """
 	pass

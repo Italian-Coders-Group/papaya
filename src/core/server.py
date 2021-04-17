@@ -13,7 +13,6 @@ from .abc.database.guild import AbstractGuild
 from .abc.server import AbstractServer
 from .dataclass.PapUser import PapUser
 from .logging import get_logger
-import core.commandSystem
 
 
 defaultPerms = {
@@ -76,15 +75,14 @@ class Server( AbstractServer ):
 			f'issuer: {msg.author.name}'
 		)
 		# get function/coroutine
-		coro: Coroutine = self.commands.getOrDefault( cmd[ 0 ].lower(), utils.placeHolderCoro )
+		coro: Coroutine = self.commands.getOrDefault( cmd[ 0 ].lower(), None )
 		# check if its a command/coroutine
-		if not asyncio.iscoroutinefunction(coro):
+		if ( coro is None ) or ( not asyncio.iscoroutinefunction(coro) ):
+			# no command found
+			await msg.channel.send( f'Unknown command: {cmd[ 0 ]}' )
 			return
 		# execute command
-		code = await coro(self, msg)
-		# check return code, None means that the placeholder was used
-		if code is None:
-			await msg.channel.send( f'Unknown command: {cmd[ 0 ]}' )
+		await coro(self, msg)
 
 	async def handleReactionAdd( self, reaction: Reaction, user: Member ) -> None:
 		"""
