@@ -21,7 +21,8 @@ class openingWriteMode(Enum):
 class fileType(Enum):
 	folder = 'folder'
 	file = 'file'
-	both = 'both'
+	folderOrFile = 'folderOrFile'
+	fileSystem = 'fileSystem'
 
 
 class AbstractFile(metaclass=ABCMeta):
@@ -52,7 +53,7 @@ class AbstractFile(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def read( self, mode: openingReadMode ) -> Union[bytes, str]:
+	def read( self, mode: openingReadMode ) -> [bytes, str]:
 		"""
 		Implementation of read.
 		this method can read both text and bytes, given the right openingReadMode
@@ -72,7 +73,7 @@ class AbstractFile(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def write( self, mode: openingWriteMode, data: Union[bytes, str] ) -> None:
+	def write( self, mode: openingWriteMode, data: [bytes, str] ) -> None:
 		"""
 		Implementation of write.
 		this method can write both text and bytes, given the right openingWriteMode
@@ -98,7 +99,7 @@ class AbstractFile(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def getPath( self ) -> Union[Path, None]:
+	def getPath( self ) -> [Path, None]:
 		""" Gets the path of this file, None if its not on disk """
 		pass
 
@@ -224,7 +225,7 @@ class AbstractFile(metaclass=ABCMeta):
 		pass
 
 	@staticmethod
-	def decompress( file: Union[ 'AbstractFile', bytes ] ) -> 'AbstractFile':
+	def decompress( file: [ 'AbstractFile', bytes ] ) -> 'AbstractFile':
 		"""
 		Decompresses a previusly LZMA compressed File object or bytes.
 		:param file: compressed File or bytes
@@ -233,7 +234,7 @@ class AbstractFile(metaclass=ABCMeta):
 		pass
 
 	@staticmethod
-	def openFile( path: Union[Path, str] ) -> 'AbstractFile':
+	def openFile( path: [Path, str] ) -> 'AbstractFile':
 		"""
 		Opens a file and returns a File object, equivalent of File(path)
 		:param path: file to open
@@ -248,7 +249,7 @@ class AbstractFolder( metaclass=ABCMeta ):
 	_parentFS: 'AbstractFileSystem' = None
 
 	@abstractmethod
-	def walk( self, ftype: fileType = fileType.both ) -> Union[AbstractFile, 'AbstractFolder']:
+	def walk( self, ftype: fileType = fileType.folderOrFile ) -> [AbstractFile, 'AbstractFolder']:
 		""" walk on all folders and files, basically same as Folder.__iter__(), but with a fancy name """
 		pass
 
@@ -288,16 +289,16 @@ class AbstractFolder( metaclass=ABCMeta ):
 		pass
 
 	@abstractmethod
-	def getParentFS( self ) -> 'AbstractFolder':
+	def getParentFS( self ) -> 'AbstractFileSystem':
 		""" Returns the parent FileSystem object, if possible """
 		pass
 
 	@abstractmethod
-	def __iter__(self):
+	def __iter__(self) -> 'AbstractFolder':
 		pass
 
 	@abstractmethod
-	def __next__(self) -> Union[AbstractFile, 'AbstractFolder']:
+	def __next__(self) -> [AbstractFile, 'AbstractFolder']:
 		pass
 
 
@@ -308,7 +309,7 @@ class AbstractFileSystem(metaclass=ABCMeta):
 	cache: Dict[str, Union[ AbstractFile, AbstractFolder, 'AbstractFileSystem' ] ]
 
 	@abstractmethod
-	def get( self, path: str, ftype: fileType, layer: int = 0 ) -> Union[AbstractFile, AbstractFolder]:
+	def get( self, path: [str, Path], ftype: fileType, layer: int = 0 ) -> [AbstractFile, AbstractFolder, 'AbstractFileSystem']:
 		"""
 		Gets a file, folder from this on
 		:param path: path to file/folder to get
@@ -319,7 +320,7 @@ class AbstractFileSystem(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def getAsset( self, path: str ) -> AbstractFile:
+	def getResource( self, path: str ) -> AbstractFile:
 		"""
 		Gets a file from path
 		:param path: file path

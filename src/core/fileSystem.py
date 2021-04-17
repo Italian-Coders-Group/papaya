@@ -25,7 +25,7 @@ class File(AbstractFile):
 	- check if file is an image
 	"""
 
-	def __init__(self, path: Union[Path, str] = None, data: Union[BytesIO, bytes] = None):
+	def __init__(self, path: [Path, str] = None, data: [BytesIO, bytes] = None):
 		"""
 		Construct a File object
 		:param path:
@@ -58,7 +58,7 @@ class File(AbstractFile):
 			self.path = None
 		self.content = BytesIO( data )
 
-	def read( self, mode: openingReadMode = openingReadMode.readBytes) -> Union[ bytes, str ]:
+	def read( self, mode: openingReadMode = openingReadMode.readBytes) -> [ bytes, str ]:
 		"""
 		Implementation of read.
 		this method can read both text and bytes, given the right openingReadMode
@@ -81,7 +81,7 @@ class File(AbstractFile):
 		""" This reads bytes, not much to say """
 		return self.read( openingReadMode.readBytes )
 
-	def write( self, mode: openingWriteMode, data: Union[ bytes, str ] ) -> None:
+	def write( self, mode: openingWriteMode, data: [ bytes, str ] ) -> None:
 		"""
 		Implementation of write.
 		this method can write both text and bytes, given the right openingWriteMode
@@ -106,7 +106,7 @@ class File(AbstractFile):
 		"""
 		self.write( openingWriteMode.writeBytes, data )
 
-	def getPath( self ) -> Union[Path, None]:
+	def getPath( self ) -> [Path, None]:
 		""" Gets the path of this file, None if its not on disk """
 		return self.path
 
@@ -245,7 +245,10 @@ class File(AbstractFile):
 			self.lastEdit = self.path.stat().st_mtime
 
 	def __str__(self) -> str:
-		return f'File object. path: { str( self.path.resolve() if isinstance( self.path, Path ) else None ) }'
+		return f'<File object of { str( self.path.resolve() if isinstance( self.path, Path ) else None ) }>'
+
+	def __repr__(self) -> str:
+		return self.__str__()
 
 	def __enter__(self):
 		pass
@@ -255,7 +258,7 @@ class File(AbstractFile):
 			self.updateFile()
 
 	@staticmethod
-	def decompress( compFile: Union[ AbstractFile, bytes ] ) -> AbstractFile:
+	def decompress( compFile: [ AbstractFile, bytes ] ) -> AbstractFile:
 		"""
 		Decompresses a previusly LZMA compressed File object or bytes.
 		:param compFile: compressed File or bytes
@@ -277,7 +280,7 @@ class File(AbstractFile):
 		return file
 
 	@staticmethod
-	def openFile( path: Union[ Path, str ] ) -> AbstractFile:
+	def openFile( path: [ Path, str ] ) -> AbstractFile:
 		"""
 		Opens a file and returns a File object, equivalent of File(path)
 		:param path: file to open
@@ -288,7 +291,7 @@ class File(AbstractFile):
 
 class Folder(AbstractFolder):
 
-	def __init__( self, parentFS: AbstractFileSystem, path: Union[Path, str] ):
+	def __init__( self, parentFS: AbstractFileSystem, path: [Path, str] ):
 		if not isinstance(path, Path):
 			path = Path(path)
 		if not path.is_dir():
@@ -297,7 +300,7 @@ class Folder(AbstractFolder):
 		self._path = path
 		self._parentFS = parentFS
 
-	def walk( self, ftype: fileType = fileType.both ) -> Union[AbstractFile, AbstractFolder]:
+	def walk( self, ftype: fileType = fileType.folderOrFile ) -> [AbstractFile, AbstractFolder]:
 		""" walk on all folders and files, basically same as Folder.__iter__(), but with a fancy name """
 		for file in self._path.glob('*'):
 			if file.is_dir():
@@ -321,32 +324,37 @@ class Folder(AbstractFolder):
 
 	def asFileSystem( self ) -> 'AbstractFileSystem':
 		""" Returns this folder as a FileSystem obejct """
-		return self._parentFS.get( self._path.name )
+		return self._parentFS.get( self._path.name, ftype=fileType.fileSystem )
 
 	def listContents( self ) -> List[ Union[ AbstractFile, 'AbstractFolder' ] ]:
 		""" Returns a list with all the containing files/folders """
+		return [ file for file in self ]
+
+	def getPath( self ) -> Path:
+		""" Returns the path of this folder """
 
 	def getParent( self ) -> 'AbstractFolder':
 		""" Returns the parent Folder object, if possible """
-		pass
 
-	def getParentFS( self ) -> 'AbstractFolder':
+	def getParentFS( self ) -> 'AbstractFileSystem':
 		""" Returns the parent FileSystem object, if possible """
-		pass
 
 	def __str__(self) -> str:
-		return f'Folder object. path: { str( self._path.resolve() if isinstance( self._path, Path ) else None ) }'
+		return f'<Folder object of { str( self._path.resolve() if isinstance( self._path, Path ) else None ) }>'
 
-	def __iter__( self ):
+	def __repr__(self) -> str:
+		return self.__str__()
+
+	def __iter__( self ) -> 'AbstractFolder':
 		self.__tmp_iter_array_index = 0
 		self.__tmp_iter_array = [ file for file in self._path.glob( '*' ) ]
 		return self
 
-	def __next__( self ) -> Union[AbstractFile, AbstractFolder]:
+	def __next__( self ) -> [AbstractFile, AbstractFolder]:
 		if self.__tmp_iter_array_index < len( self.__tmp_iter_array ):
 			file = self.__tmp_iter_array[ self.__tmp_iter_array_index ]
 			self.__tmp_iter_array_index += 1
-			return File( file ) if file.is_file() else Folder( file )
+			return File( file ) if file.is_file() else Folder( self, file )
 		del self.__tmp_iter_array_index
 		del self.__tmp_iter_array
 		raise StopIteration
@@ -357,13 +365,13 @@ class Folder(AbstractFolder):
 
 class FileSystem(AbstractFileSystem):
 
-	def __init__( self, path: Union[Path, str] ):
+	def __init__( self, path: [Path, str] ):
 		if not isinstance(path, Path):
 			path = Path(path)
-		self._sandbox = path
+		self._sandbox = path.absolute().resolve()
 		self.cache = {}
 
-	def get( self, path: Union[Path, str], ftype: fileType = fileType.file, layer: int = 0 ) -> Union[AbstractFile, AbstractFolder]:
+	def get( self, path: [Path, str], ftype: fileType = fileType.file, layer: int = 0 ) -> [AbstractFile, AbstractFolder, AbstractFileSystem]:
 		"""
 		Gets a file, folder from this on
 		:param path: path to file/folder to get
@@ -371,22 +379,18 @@ class FileSystem(AbstractFileSystem):
 		:param layer: PRIVATE PARAMETER
 		:return: a File or Folder object
 		"""
+		# make path a Path obj
 		if not isinstance(path, Path):
 			path = Path(path)
 
-		if path.parts[layer] in self.cache.keys():
-			if isinstance( self.cache[ path.parts[layer] ], FileSystem):
-				return self.cache[ path.parts[layer] ].getAsset(path, layer + 1)
+		# check if the path is in the sandbox
 		try:
-			path.relative_to(self._sandbox)
+			if path.name not in self:
+				path.relative_to(self._sandbox)
 		except:
 			raise FileSystemError(f'{str(path)} its not inside {str( self._sandbox )}')
 
-		relPath = path.relative_to(self._sandbox)
-
-		if '..' in path.parts:
-			raise FileSystemError( f'{str( relPath )} its not inside {str( self._sandbox )}' )
-
+		# recursion things to get a file in a folder
 		if len( path.parts ) > layer:
 			tmp = Path( '/'.join( path.parts[:layer + 1] ) )
 			if tmp.is_dir():
@@ -397,32 +401,43 @@ class FileSystem(AbstractFileSystem):
 				else:
 					raise FileSystemError( f'Unknown path {str( path )}' )
 
+		path = self._sandbox.joinpath(path)
+
+		# get the file/folder/fileSystem object
 		if ftype is fileType.folder:
 			if path.exists() and ( not path.is_dir() ):
 				raise FileSystemError('The specified path points to a file, not a folder')
-			self.cache[ path.parts[layer] ] = Folder(path)
+			self.cache[ path.parts[layer] ] = Folder(self, path)
 			return self.cache[ path.parts[layer] ]
-		else:
+		elif ftype is fileType.file:
 			if path.exists() and ( not path.is_file() ):
 				raise FileSystemError( 'The specified path points to a folder, not a file' )
 			self.cache[ path.parts[layer] ] = File(path)
 			return self.cache[ path.parts[layer] ]
+		elif ftype is fileType.fileSystem:
+			return FileSystem(path)
+		else:
+			raise ValueError(f'Unknown file type "{ftype}"')
 
-	def getAsset( self, path: str ) -> AbstractFile:
+	def getResource( self, path: str ) -> AbstractFile:
 		"""
 		Gets a file from path
 		:param path: file path
 		:return: File object
 		"""
-		return self.get(path)
+		return self.get(path, ftype=fileType.file)
 
-	def getFolder( self, path: Union[Path, str] ) -> AbstractFolder:
+	def getFolder( self, path: [Path, str] ) -> AbstractFolder:
 		"""
 		Gets a folder from path
 		:param path: folder path
 		:return: Folder object
 		"""
 		return self.get(path, fileType.folder)
+
+	def getParent( self ) -> 'AbstractFileSystem':
+		""" Returns the parent FileSystem object, if possible """
+		pass
 
 	def create( self, path: str, name: str ) -> None:
 		"""
@@ -438,7 +453,7 @@ class FileSystem(AbstractFileSystem):
 		Get this filesystem as folder object
 		:return: folder object representing this filesystem path
 		"""
-		self._folderForm = Folder( self._sandbox )
+		self._folderForm = Folder( None, self._sandbox )
 		return self._folderForm
 
 	def __iter__( self ):
@@ -446,17 +461,17 @@ class FileSystem(AbstractFileSystem):
 		self.__tmp_iter_array = [ file for file in self._sandbox.glob( '*' ) ]
 		return self
 
-	def __next__( self ) -> Union[ AbstractFile, AbstractFolder ]:
+	def __next__( self ) -> [ AbstractFile, AbstractFolder ]:
 		if self.__tmp_iter_array_index < len( self.__tmp_iter_array ):
 			file = self.__tmp_iter_array[ self.__tmp_iter_array_index ]
 			self.__tmp_iter_array_index += 1
-			return File( file ) if file.is_file() else Folder( file )
+			return File( file ) if file.is_file() else Folder( self, file )
 		del self.__tmp_iter_array_index
 		del self.__tmp_iter_array
 		raise StopIteration
 
 	def __contains__(self, item):
-		if item in self.cache.keys():
+		if item in self.cache:
 			return True
 
 		return self._sandbox.joinpath(item).exists()
