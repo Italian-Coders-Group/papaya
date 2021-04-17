@@ -124,29 +124,24 @@ async def tttstats(server: AbstractServer, msg: Message):
     print(user)
 
 
-@Command
-async def viewgames(server: AbstractServer, msg: Message):
-    server_games = d.get(server.guild.id)
-    await msg.channel.send(f"Current Games in this server: {server_games}")
+
+# @Command
+# async def testbase(server: AbstractServer, msg: Message):
+#     buffer = io.BytesIO()
+#     image = Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/x.png")
+#     image.save(buffer, "PNG")
+#     buffer.seek(0)
+#     await msg.channel.send(file=File(buffer, "testBase.png"))
 
 
-@Command
-async def testbase(server: AbstractServer, msg: Message):
-    buffer = io.BytesIO()
-    image = Image.open(f"{os.getcwd()}/modules/tic_tac_toe/src/x.png")
-    image.save(buffer, "PNG")
-    buffer.seek(0)
-    await msg.channel.send(file=File(buffer, "testBase.png"))
+# @Command
+# async def grid(server: AbstractServer, msg: Message):
+#     games = [['x', 'x', 'o'], ['o', 'x', 'x'], ['x', 'o', 'o']]
+#     test = check_for_win(games, 'x')
+
+#     print(test)
 
 
-@Command
-async def grid(server: AbstractServer, msg: Message):
-    games = [['x', 'x', 'o'], ['o', 'x', 'x'], ['x', 'o', 'o']]
-    test = check_for_win(games, 'x')
-
-    print(test)
-
-
-@Command
-async def get_state(server: AbstractServer, msg: Message):
-    await msg.channel.send(d.get(server.guild.id)[0].get_vs())
+# @Command
+# async def get_state(server: AbstractServer, msg: Message):
+#     await msg.channel.send(d.get(server.guild.id)[0].get_vs())

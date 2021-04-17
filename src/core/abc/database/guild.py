@@ -108,6 +108,13 @@ class AbstractGuild(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
+	def getLiveGamesForGuild( self ) -> List[ PapGame ]:
+		"""
+		Returns the list of current games in the guild.
+		:return List of games
+		"""
+
+	@abstractmethod
 	def getStatsForUserInGuild(self, userID: int, gameType: str = 'any') -> PapStats:
 		"""
 		Returns a user in the guild with his stats, None if not found
