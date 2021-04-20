@@ -1,26 +1,13 @@
 import os
-from games.abc.basePlayer import BasePlayer
+from core.abc.games.player import Player
 from PIL import Image
+from discord import Member
 
 
-class Player(BasePlayer):
+class Player(Player):
 
-    def __init__(self, user, symbol: Image, sign: str):
-        """
-        Sarebbe utile storare nel db un Player_ID con un Guild_ID così da poter sperimentare con ledearboards o altro.
-
-        Anche per vedere la storia dei game di un giocatore, anche questo forse è meglio metterlo in BasePlayer
-
-
-
-        :param user:
-        :param symbol:
-        """
-
-        self.user = user
-        self.sign = sign
-
-        self.symbol = symbol
+    def __init__(self, user: Member, symbol: Image, sign: str):
+        super().__init__(user, symbol, sign)
 
     def getUser( self ):
         return self.user

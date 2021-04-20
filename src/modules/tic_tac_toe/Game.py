@@ -1,4 +1,7 @@
-import discord
+from io import BytesIO
+from typing import List, Tuple
+
+from discord import Member
 from .Player import Player
 from .AI import AI
 from random import choice
@@ -10,6 +13,7 @@ from PIL import Image, ImageDraw
 from .Grid import Grid
 from core import utils
 from core.dataclass import PapGame
+from core.abc.games.TwoPlayersGame import TwoPlayersGame
 # from core.database import get_game_id
 
 
@@ -101,26 +105,37 @@ def from2Dto1D(pos: tuple):
 	return positions[pos]
 
 
-class Game(BaseGame):
+class TicTacToe(TwoPlayersGame):
 
-	def __init__(self, player1: discord.Member = None, player2: discord.Member = None, data: dict = None):
-		"""
-		Cheks if the game is new or loaded from DB
-
-		Creates a new game if no data is passed, otherwise it parses the data provided.
-		"""
-
+	def __init__(self, player1: Member, player2: Member, gameID: str = None, data: dict = None):
 		if data is None:
 			self.player1 = Player(player1.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/x.png'), 'x')
-			self.player2 = Player(player2.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o') if player2 is not None else AI(Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o')
+			self.player2 = Player(player2.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o') if player2 is not None else AI(
+				Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o')
 			self.grid = [['', '', ''], ['', '', ''], ['', '', '']]
 			self.turn = self.player2 if self.player2.user != 'AI' else self.player1
 		else:
 			self.parseData(data)
 
 		self.players = cycle([self.player1, self.player2])
+		self.gameID = gameID if gameID is not None else ''
 
-	def compile_image(self):
+	async def get_vs(self):
+		return f'{self.player1} vs {self.player2}'
+
+	async def nextTurn(self) -> Player:
+		"""
+		This function returns the next player in the cycle.
+		:return: Player
+		"""
+		return next(self.players)
+
+	async def drawImage(self) -> BytesIO:
+		"""
+		This function returns a byte buffer containing the new image
+		and saves it for URL
+		:return: BytesIO
+		"""
 		buffer = io.BytesIO()
 
 		base_grid = Image.new('RGB', (156, 156), (255, 255, 255))
@@ -154,7 +169,13 @@ class Game(BaseGame):
 		buffer.seek(0)
 		return buffer
 
-	def makeMove(self, pos):
+	async def makeMove(self, coordinates: List) -> Tuple[BytesIO, int]:
+		"""
+		This funcions takes in the coordinates of the move, transaltes them
+		and returns a bytes buffer and a code.
+		:param coordinates:
+		:return:
+		"""
 		old_board = self.compile_image()
 		posX, posY = get_coords(pos)
 		tied = False
@@ -191,13 +212,16 @@ class Game(BaseGame):
 					self.turn = self.player1
 					code = 0
 			return new_board, code
-			code = 0
 		else:
 			code = 1
 		new_board = self.compile_image()
 		return new_board, code
 
-	def compMove(self):
+	async def compMove(self):
+		"""
+		This function returns a move made by the AI.
+		:return:
+		"""
 		possibleMoves = []
 		for i, row in enumerate(self.grid):
 			for j, cell in enumerate(row):
@@ -245,13 +269,11 @@ class Game(BaseGame):
 
 		return from1Dto2D(move)
 
-	def processTurn(self):
-		self.turn = next(self.players)
-
-	def get_vs(self):
-		return f'{self.player1} vs {self.player2}'
-
-	def getData(self):
+	async def getData(self) -> dict:
+		"""
+		This function makes a dict with the useful info about the game.
+		:return:
+		"""
 		data = {
 			'player1ID': self.player1.user,
 			'player2ID': self.player2.user,
@@ -260,29 +282,27 @@ class Game(BaseGame):
 		}
 		return data
 
-	def parseData(self, data: dict):
+	async def parseData(self, data: dict):
+		"""
+		If data is passed the init is from this instead of passed args.
+		:param data:
+		:return:
+		"""
 		gameData: PapGame = data.gameData
 		gameID: PapGame = data.gameID
 		self.gameID = gameID
-		self.player1 = Player(gameData['player1ID'], Image.open( f'{os.getcwd()}/modules/tic_tac_toe/src/x.png') , 'x')
+		self.player1 = Player(gameData['player1ID'], Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/x.png'), 'x')
 		if gameData['player2ID'] == 0:
 			self.player2 = AI(Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o')
 		else:
-			self.player2 = Player(gameData['player2ID'], Image.open( f'{os.getcwd()}/modules/tic_tac_toe/src/o.png') , 'o' )
+			self.player2 = Player(gameData['player2ID'], Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o')
 
 		if gameData['currentTurn'] == gameData['player1ID']:
-			self.turn = Player(gameData['player1ID'], Image.open( f'{os.getcwd()}/modules/tic_tac_toe/src/x.png') , 'x' )
+			self.turn = Player(gameData['player1ID'], Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/x.png'), 'x')
 		else:
-			self.turn = Player(gameData['player2ID'], Image.open( f'{os.getcwd()}/modules/tic_tac_toe/src/o.png' ),
+			self.turn = Player(gameData['player2ID'], Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'),
 			                   'o')
 		# else:
 		#     self.turn = AI(Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
 
 		self.grid = gameData['grid']
-
-	"""
-	Questi sono test per una specie di "traduzione" tra IA e PIL.
-	
-	Non so ancora come verrà fatta ma vorrei cominciare a sviluppare il gioco con un "linguaggio" che anche la IA 
-	potrà usare, così non dobbiamo usare metodi diversi se sta giocando la IA o un altro player
-	"""
