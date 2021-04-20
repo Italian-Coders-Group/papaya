@@ -32,6 +32,6 @@ async def put(server: AbstractServer, msg: Message):
 @Command
 async def c4stats(server: AbstractServer, msg: Message):
     
-    userStats = server.GetDatabase().getStatsForUserInGuild(msg.author.id)
+    user = server.GetDatabase().getStatsForUserInGuild(msg.author.id)
 
     await msg.channel.send(f'Stats for you: Wins {user[3]}. Losses {user[4]}.  Ties {user[5]}.')
