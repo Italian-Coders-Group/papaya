@@ -14,7 +14,7 @@ class TwoPlayersGame(metaclass=ABCMeta):
 	async def nextTurn(self) -> Player:
 		"""
 		This function returns the next player in the cycle.
-		:return: Player
+		:return: TicTacToePlayer
 		"""
 		pass
 
@@ -33,14 +33,6 @@ class TwoPlayersGame(metaclass=ABCMeta):
 		This funcions takes in the coordinates of the move, transaltes them
 		and returns a bytes buffer and a code.
 		:param coordinates:
-		:return:
-		"""
-		pass
-
-	@abstractmethod
-	async def compMove(self):
-		"""
-		This function returns a move made by the AI.
 		:return:
 		"""
 		pass
