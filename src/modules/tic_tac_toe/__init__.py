@@ -1,4 +1,4 @@
-from .Game import TicTacToe, check_for_win
+from .TicTacToe import TicTacToe, check_for_win
 from .TicTacToeAi import TicTacToeAI
 from core.commandSystem import Command
 from core.abc.server import AbstractServer
@@ -35,12 +35,11 @@ import requests
 async def ttt(server: AbstractServer, msg: Message):
 
     try:
-
         gameRequest = server.GetDatabase().makeGameRequest(msg.author.id, msg.mentions[0].id, msg.channel.id, 'tic tac toe') if msg.mentions else False
         print(not gameRequest)
         player1 = msg.author
         player2 = None if not msg.mentions else msg.mentions[0]
-        newGame = Game(player1=player1, player2=player2)
+        newGame = TicTacToe(player1=player1, player2=player2, data=None)
         server.GetDatabase().setGame(
             PapGame(
                 gameID=gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id] if msg.mentions else [msg.author.id, 0]),
@@ -74,7 +73,7 @@ async def draw(server: AbstractServer, msg: Message):
         gameData = server.GetDatabase().getLiveGameForUser(userID=msg.author.id, gameType="tic tac toe")
         still_live = True
 
-        resumeGame = Game(data=gameData[0])
+        resumeGame = TicTacToe(data=gameData[0])
         resumeGameID = gameData[0].gameID
         userIDs = gameData[0].userIDs
 

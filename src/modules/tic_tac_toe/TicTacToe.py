@@ -1,5 +1,5 @@
 from io import BytesIO
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from discord import Member
 from .TicTacToePlayer import TicTacToePlayer
@@ -73,8 +73,10 @@ class TicTacToe(TwoPlayersGame):
 	def __init__(self, player1: Member, player2: Member, gameID: str = None, data: dict = None):
 		if data is None:
 			self.player1 = TicTacToePlayer(player1.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/x.png'), 'x')
-			self.player2 = TicTacToePlayer(player2.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o') if player2 is not None else AI(
-				Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o')
+			self.player2 = TicTacToePlayer(player2.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o') if player2 is not None else TicTacToeAI('AI',
+			                                                                                                                                                    Image.open(
+				                                                                                                                                                    f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'),
+			                                                                                                                                                    'o')
 			self.grid = [['', '', ''], ['', '', ''], ['', '', '']]
 			self.turn = self.player2 if self.player2.user != 'AI' else self.player1
 		else:
@@ -188,7 +190,7 @@ class TicTacToe(TwoPlayersGame):
 				code = 0
 		return code
 
-	async def getData(self) -> dict:
+	async def getData(self) -> Dict:
 		"""
 		This function makes a dict with the useful info about the game.
 		:return:
