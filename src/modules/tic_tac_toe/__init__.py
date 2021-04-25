@@ -1,5 +1,5 @@
-from .Game import Game, check_for_win
-from .AI import AI
+from .Game import TicTacToe, check_for_win
+from .TicTacToeAi import TicTacToeAI
 from core.commandSystem import Command
 from core.abc.server import AbstractServer
 from core.database.database import Database
@@ -14,8 +14,21 @@ import io
 import os
 from core.fileSystem import File as localFile
 from core import utils
+import requests
 
 # TODO: REDO ENTIRE GAMESYSTEM DUE TO DATASTUFF CHANGES
+
+
+# @Command
+# async def imageTest(server: AbstractServer, msg: Message):
+#     test = embed(
+#         title='image',
+#         content='test',
+#         color=getColor(random=True)
+#     )
+#     file = File(requests.get('http://localhost:6060/tictactoe/test').text.replace('"', ''), filename='image.png')
+#     test.set_image(url='attachment://image.png')
+#     await msg.channel.send(file=file, embed=test)
 
 
 @Command
