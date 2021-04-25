@@ -9,3 +9,4 @@ src/bot.py
 environment
 start
 src/modules/tic_tac_toe/src/imagesToSend
+/src/modules/tic_tac_toe/src/tictactoe_images/
