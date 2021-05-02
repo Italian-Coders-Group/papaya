@@ -10,7 +10,7 @@ _tables: Dict[str, List[str] ] = {
 	'users': [
 		'guildID',
 		'discordID',
-		'prefix',
+		'personalPrefix',
 		'permissions'
 	],
 	'games': [
