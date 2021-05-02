@@ -79,6 +79,19 @@ class Database(AbstractDatabase):
 		"""
 		return _makeDictionary( table, self.backend.makeRequest(sql, *args) )
 
+	def makeUniqueRequest(self, sql: str, *args, convertSingle: bool = True, table: str = '') -> Union[ List[ Dict[str, Any] ], Dict[str, Any] ]:
+		"""
+		Makes a request with SQL code to the database.
+		DO NOT USE VARIABLES IN THE SQL CODE!
+		IS **VERY** INSECURE AND CAN CAUSE DATA LOSS!
+		:param convertSingle:
+		:param table:
+		:param sql: SQL code
+		:param args: arguments for value sanitizing
+		:return: a Single Object with the result (can be emtpy)
+		"""
+		return _makeUniqueDictionary( table, self.backend.makeUniqueRequest(sql, *args))
+
 	def save( self ) -> None:
 		"""	Commit changes to the database file	"""
 		if getattr(self, 'backend', None) is not None:
@@ -104,3 +117,15 @@ def _makeDictionary( table: str, row: List[Tuple] ) -> List[ Dict[str, Any] ]:
 			items.append( { pos: value for pos, value in enumerate(item) } )
 
 	return items
+
+
+def _makeUniqueDictionary( table: str, queryResult: Any) -> Dict[str, Any]:
+	if table in _tables.keys():
+		template = _tables[table]
+
+		dictionary = {
+			template[pos]: value for pos, value in enumerate(queryResult)
+		}
+	else:
+		return {pos:  value for pos, value in enumerate(queryResult)}
+	return dictionary

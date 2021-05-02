@@ -32,6 +32,19 @@ class AbstractDatabase(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
+	def makeUniqueRequest(self, sqlCode: str, *args: List[Any], table: str = '' ) -> Any:
+		"""
+		Makes a request with SQL code to the database.
+		DO NOT USE VARIABLES IN THE SQL CODE!
+		IS **VERY** INSECURE AND CAN CAUSE DATA LOSS!
+		:param table:
+		:param sqlCode: SQL code
+		:param args: arguments for value sanitizing
+		:return: a Single Object with the result (can be emtpy)
+		"""
+		pass
+
+	@abstractmethod
 	def save( self ) -> None:
 		"""	Commit changes to the database file	"""
 		pass
