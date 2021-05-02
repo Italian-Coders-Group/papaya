@@ -62,8 +62,8 @@ class Guild(AbstractGuild):
 				game.gameID,
 				game.gameType,
 				# data
-				PapGame.serializeUsers( game.userIDs ),
-				PapGame.serializeGameData( game.gameData ),
+				PapGame.serializeUsers(game.userIDs),
+				PapGame.serializeGameData(game.gameData),
 				game.live
 			)
 		self.db.save()
@@ -76,14 +76,14 @@ class Guild(AbstractGuild):
 		"""
 		if userID not in self._userCache.keys():
 			# EXPLANATION: select an user with userID userID and guildID of this guild
-			userData: Dict[ str, Any ] = self.db.makeRequest(
+			userData = self.db.makeRequest(
 				'SELECT * FROM users WHERE guildID = ? AND discordID = ?',
 				self.guildID,
 				userID,
 				table='users',
 			)
-			userData.pop('guildID')
-			self._userCache[ userID ] = PapUser( **userData )
+			userData[0].pop('guildID')
+			self._userCache[ userID ] = PapUser( **userData[0] )
 		return self._userCache.get( userID )
 
 	def setUser( self, user: PapUser ) -> None:
