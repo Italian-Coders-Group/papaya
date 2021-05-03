@@ -1,7 +1,8 @@
 from io import BytesIO
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union, Iterator
 
 from discord import Member
+
 from .TicTacToePlayer import TicTacToePlayer
 from .TicTacToeAi import TicTacToeAI
 from random import choice
@@ -12,7 +13,7 @@ import os
 from PIL import Image, ImageDraw
 from .Grid import Grid
 from core import utils
-from core.dataclass import PapGame
+from core.dataclass.PapGame import PapGame
 from core.abc.games.TwoPlayersGame import TwoPlayersGame
 
 
@@ -53,27 +54,13 @@ def from1Dto2D(move: int):
 	return table[str(move)]
 
 
-def from2Dto1D(pos: tuple):
-	positions = {
-		(0, 0): '1',
-		(0, 1): '2',
-		(0, 2): '3',
-		(1, 0): '4',
-		(1, 1): '5',
-		(1, 2): '6',
-		(2, 0): '7',
-		(2, 1): '8',
-		(2, 2): '9'
-	}
-	return positions[pos]
-
-
 class TicTacToe(TwoPlayersGame):
 
-	def __init__(self, player1: Member, player2: Member, gameID: str = None, data: dict = None):
+	def __init__(self, player1: Member, player2: Member, gameID: str, data: PapGame = None):
 		if data is None:
 			self.player1 = TicTacToePlayer(player1.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/x.png'), 'x')
-			self.player2 = TicTacToePlayer(player2.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o') if player2 is not None else TicTacToeAI('AI',
+			self.player2 = TicTacToePlayer(player2.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o') if player2 is not None \
+							else TicTacToeAI('AI',
 			                                                                                                                                                    Image.open(
 				                                                                                                                                                    f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'),
 			                                                                                                                                                    'o')
@@ -82,24 +69,29 @@ class TicTacToe(TwoPlayersGame):
 		else:
 			self.parseData(data)
 
-		self.players = cycle([self.player1, self.player2])
-		self.gameID = gameID if gameID is not None else ''
+		self.players = iter([self.player1, self.player2])
+		self.gameID = gameID
 
-	async def get_vs(self):
+	def get_vs(self):
 		"""
 		This method is useless
 		:return:
 		"""
 		return f'{self.player1.getUser()} vs {self.player2.getUser()}'
 
-	async def nextTurn(self):
+	def nextTurn(self):
 		"""
 		This function returns the next player in the cycle.
 		:return:
 		"""
-		return next(self.players)
+		if self.turn.user == self.player1.user:
+			return self.player2
+		if self.turn.user == self.player2.user:
+			return self.player1
 
-	async def drawImage(self):
+		raise NotImplementedError('turn error')
+
+	def drawImage(self):
 		"""
 		This function saves the current state of
 		:return:
@@ -133,7 +125,7 @@ class TicTacToe(TwoPlayersGame):
 		# {os.getcwd()}/modules/tic_tac_toe/src/imagesToSend -> path on windows
 		return
 
-	async def makeMove(self, coordinates: str) -> Tuple[BytesIO, int]:
+	def makeMove(self, coordinates: str) -> int:
 		"""
 		This funcions takes in the coordinates of the move, transaltes them
 		and returns a bytes buffer and a code.
@@ -146,7 +138,11 @@ class TicTacToe(TwoPlayersGame):
 		}
 		self.drawImage()
 		self.grid, code = self.turn.makeMove(data=dataToPlayer)
+		print(self.grid)
 
+		if code == 2:
+			# This indicates that the position is not valid, as it's already been taken
+			return code
 		if code == 3:
 			# indicates that the position is invalid, both as parameters or space available on the grid
 			return code
@@ -154,7 +150,10 @@ class TicTacToe(TwoPlayersGame):
 		hasWon = check_for_win(self.grid, self.turn.sign)
 
 		if hasWon:
-			return self.drawImage(), 1
+			self.drawImage()
+			return 1
+
+		v = []
 
 		for row in self.grid:
 			for cell in row:
@@ -163,6 +162,8 @@ class TicTacToe(TwoPlayersGame):
 
 		if len(v) == 0:
 			tied = True
+		else:
+			tied = False
 
 		if tied:
 			self.drawImage()
@@ -172,13 +173,15 @@ class TicTacToe(TwoPlayersGame):
 
 		if self.turn.user == 'AI':
 			dataToAI = {
-				'grid': self.grid
+				'grid': self.grid,
+				'coords': None
 			}
 
 			aiMove = self.turn.makeMove(dataToAI)
-			x, y = from1Dto2D(aiMove)
+			y, x = from1Dto2D(aiMove)
 
 			self.grid[y][x] = self.turn.sign
+			print(self.grid)
 
 			self.drawImage()
 
@@ -188,13 +191,15 @@ class TicTacToe(TwoPlayersGame):
 			else:
 				self.turn = self.nextTurn()
 				code = 0
+		self.drawImage()
 		return code
 
-	async def getData(self) -> Dict:
+	def getData(self) -> Dict:
 		"""
 		This function makes a dict with the useful info about the game.
 		:return:
 		"""
+		# TODO: MAKE THIS RETURN DIRECTLY THE PAPGAME OBJECT
 		data = {
 			'player1ID': self.player1.user,
 			'player2ID': self.player2.user,
@@ -203,27 +208,26 @@ class TicTacToe(TwoPlayersGame):
 		}
 		return data
 
-	async def parseData(self, data: PapGame):
+	def parseData(self, data: PapGame):
 		"""
 		If data is passed the init is from this instead of passed args.
 		:param data:
 		:return:
 		"""
-		gameData = data.gameData
+		gameData = PapGame.deserializeGameData(data.gameData)
 		gameID = data.gameID
 
 		self.gameID = gameID
 		self.player1 = TicTacToePlayer(gameData['player1ID'], Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/x.png'), 'x')
 		if gameData['player2ID'] == 0:
-			self.player2 = AI(Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o')
+			self.player2 = TicTacToeAI('AI', Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o')
 		else:
 			self.player2 = TicTacToePlayer(gameData['player2ID'], Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o')
 
 		if gameData['currentTurn'] == gameData['player1ID']:
-			self.turn = TicTacToePlayer(gameData['player1ID'], Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/x.png'), 'x')
+			self.turn = self.player1
 		else:
-			self.turn = TicTacToePlayer(gameData['player2ID'], Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'),
-			                            'o')
+			self.turn = self.player2
 		# else:
 		#     self.turn = AI(Image.open(f"{os.getcwd()}\\modules\\tic_tac_toe\\src\\o.png"), "o")
 

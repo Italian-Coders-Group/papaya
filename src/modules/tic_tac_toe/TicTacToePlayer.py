@@ -48,8 +48,8 @@ def convertCoords(inputValue: str):
 
 class TicTacToePlayer(Player):
 
-	def __init__(self, user: Member, symbol: Image, sign: str):
-		self.user = user,
+	def __init__(self, user: int, symbol: Image, sign: str):
+		self.user = user
 		self.symbol = symbol
 		self.sign = sign
 
@@ -65,7 +65,7 @@ class TicTacToePlayer(Player):
 		if grid[posY][posX] == '':
 			grid[posY][posX] = self.sign
 		else:
-			pass
+			return grid, 2
 
 		return grid, 0
 

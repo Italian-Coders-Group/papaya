@@ -11,7 +11,7 @@ from discord import Member
 class TwoPlayersGame(metaclass=ABCMeta):
 
 	@abstractmethod
-	async def nextTurn(self) -> Player:
+	def nextTurn(self) -> Player:
 		"""
 		This function returns the next player in the cycle.
 		:return: TicTacToePlayer
@@ -19,7 +19,7 @@ class TwoPlayersGame(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	async def drawImage(self) -> BytesIO:
+	def drawImage(self) -> BytesIO:
 		"""
 		This function returns a byte buffer containing the new image
 		and saves it for URL
@@ -28,7 +28,7 @@ class TwoPlayersGame(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	async def makeMove(self, coordinates: List) -> Tuple[BytesIO, int]:
+	def makeMove(self, coordinates: List) -> Tuple[BytesIO, int]:
 		"""
 		This funcions takes in the coordinates of the move, transaltes them
 		and returns a bytes buffer and a code.
@@ -38,7 +38,7 @@ class TwoPlayersGame(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	async def getData(self) -> dict:
+	def getData(self) -> dict:
 		"""
 		This function makes a dict with the useful info about the game.
 		:return:
@@ -46,7 +46,7 @@ class TwoPlayersGame(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	async def parseData(self, data: dict):
+	def parseData(self, data: dict):
 		"""
 		If data is passed the init is from this instead of passed args.
 		:param data:
