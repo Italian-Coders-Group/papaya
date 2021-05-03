@@ -221,7 +221,11 @@ class Guild(AbstractGuild):
 				)
 		return games
 
-	def getLiveGameForUser(self, discordID: int, gameType: str = 'any', user: Optional[PapUser] = None) -> List[PapGame]:
+	def getLiveGameForUser(self, discordID: int, gameType: str = 'any', user: Optional[PapUser] = None) -> List[
+		PapGame]:
+		pass
+
+	def getLiveGameForUserForGametype(self, discordID: int, gameType: str = 'any', user: Optional[PapUser] = None) -> List[PapGame]:
 		"""
 		Returns a list with all live games that this user is playing
 		:param gameType: the type of the game, use "any" for any type
@@ -229,26 +233,25 @@ class Guild(AbstractGuild):
 		:param user: ALTERNATIVE: a PapUser
 		:return: list of games
 		"""
-		games = []
-		dbGames: list = self.db.makeRequest(
-			# EXPLANATION: select all games that are live, from this guild, are of the type gameType,
+		gameData: dict = self.db.makeUniqueRequest(
+			# EXPLANATION: select the game that is live, from this guild, is of the type gameType,
 			# and include userID in userIDs
 			'SELECT * FROM games WHERE live = 1 AND guildID = ? AND gameType = ? AND userIDs LIKE ?',
 			self.guildID,
 			gameType,
-			f'%{discordID}%'
-		) if gameType != 'any' else self.db.makeRequest(
-			# EXPLANATION: select all games that are live, from this guild and include userID in userIDs
-			'SELECT * FROM games WHERE live = 1 AND guildID = ? AND userIDs LIKE ?',
-			self.guildID,
-			f'%{discordID}%'
+			f'%{discordID}%',
+			table='games'
 		)
-		for game in dbGames:
-			if str(discordID) in game[3].split(','):
-				games.append(
-					PapGame(**game)
-				)
-		return games
+		# 	if gameType != 'any' else self.db.makeRequest(
+		# 	# EXPLANATION: select all games that are live, from this guild and include userID in userIDs
+		# 	'SELECT * FROM games WHERE live = 1 AND guildID = ? AND userIDs LIKE ?',
+		# 	self.guildID,
+		# 	f'%{discordID}%',
+		# 	table='games'
+		# )
+		gameData.pop('guildID')
+		returnGame = PapGame(**gameData)
+		return returnGame
 
 	def getLiveGamesForGuild(self) -> List[PapGame]:
 		"""
