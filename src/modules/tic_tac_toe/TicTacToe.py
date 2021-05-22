@@ -15,48 +15,15 @@ from .Grid import Grid
 from core import utils
 from core.dataclass.PapGame import PapGame
 from core.abc.games.TwoPlayersGame import TwoPlayersGame
+from .gameUtils import check_for_win, from1Dto2D, from2Dto1D
 
 
 # from core.database import get_game_id
 
 
-def check_for_win(grid, sign):
-	"""
-	Questo dovrebbe essere la ricerca per i punti dato il segno che ha il giocatore.
-
-	dovrebbe essere chiamata tipo Game.check_for_win(player1.sign) o qualcosa del genere
-	:param grid:
-	:param sign:
-	:return:
-	"""
-	return ((grid[0][0] == sign and grid[0][1] == sign and grid[0][2] == sign) or
-	        (grid[1][0] == sign and grid[1][1] == sign and grid[1][2] == sign) or
-	        (grid[2][0] == sign and grid[2][1] == sign and grid[2][2] == sign) or
-	        (grid[0][2] == sign and grid[1][2] == sign and grid[2][2] == sign) or
-	        (grid[0][1] == sign and grid[1][1] == sign and grid[2][1] == sign) or
-	        (grid[0][0] == sign and grid[1][0] == sign and grid[2][0] == sign) or
-	        (grid[0][0] == sign and grid[1][1] == sign and grid[2][2] == sign) or
-	        (grid[0][2] == sign and grid[1][1] == sign and grid[2][0] == sign))
-
-
-def from1Dto2D(move: int):
-	table = {
-		'1': (0, 0),
-		'2': (0, 1),
-		'3': (0, 2),
-		'4': (1, 0),
-		'5': (1, 1),
-		'6': (1, 2),
-		'7': (2, 0),
-		'8': (2, 1),
-		'9': (2, 2)
-	}
-	return table[str(move)]
-
-
 class TicTacToe(TwoPlayersGame):
 
-	def __init__(self, player1: Member, player2: Member, gameID: str, data: PapGame = None):
+	def __init__(self, player1: Member or None, player2: Member or None, gameID: str, data: PapGame = None):
 		if data is None:
 			self.player1 = TicTacToePlayer(player1.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/x.png'), 'x')
 			self.player2 = TicTacToePlayer(player2.id, Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o') if player2 is not None \
@@ -66,8 +33,10 @@ class TicTacToe(TwoPlayersGame):
 			                                                                                                                                                    'o')
 			self.grid = [['', '', ''], ['', '', ''], ['', '', '']]
 			self.turn = self.player2 if self.player2.user != 'AI' else self.player1
+			self.pvp = True
 		else:
 			self.parseData(data)
+			self.pvp = False
 
 		self.players = iter([self.player1, self.player2])
 		self.gameID = gameID
@@ -85,11 +54,11 @@ class TicTacToe(TwoPlayersGame):
 		:return:
 		"""
 		if self.turn.user == self.player1.user:
-			return self.player2
-		if self.turn.user == self.player2.user:
-			return self.player1
+			self.turn = self.player2
+		else:
+			self.turn = self.player1
 
-		raise NotImplementedError('turn error')
+		# raise NotImplementedError('turn error')
 
 	def drawImage(self):
 		"""
@@ -114,11 +83,9 @@ class TicTacToe(TwoPlayersGame):
 
 				if cell == 'x':
 					base_grid.paste(x, (i * spacer, j * spacer), x)
-					print(f'Cell [{i}][{j}] is X')
 
 				if cell == 'o':
 					base_grid.paste(o, (i * spacer, j * spacer), o)
-					print(f'Cell [{i}][{j}] is O')
 
 		base_grid.save(f'{os.getcwd()}/modules/tic_tac_toe/src/tictactoe_images/{self.gameID}.png', format='PNG')
 		# /var/www/papaya/papayabot/games/imagesToSend -> path on remote
@@ -138,7 +105,7 @@ class TicTacToe(TwoPlayersGame):
 		}
 		self.drawImage()
 		self.grid, code = self.turn.makeMove(data=dataToPlayer)
-		print(self.grid)
+		print(f'grid after player move{self.grid}')
 
 		if code == 2:
 			# This indicates that the position is not valid, as it's already been taken
@@ -169,19 +136,19 @@ class TicTacToe(TwoPlayersGame):
 			self.drawImage()
 			return 100
 
-		self.turn = self.nextTurn()
+		self.nextTurn()
 
-		if self.turn.user == 'AI':
+		if not self.pvp:
 			dataToAI = {
-				'grid': self.grid,
-				'coords': None
+				'grid': self.grid
 			}
 
-			aiMove = self.turn.makeMove(dataToAI)
+			aiMove = self.player2.makeMove(dataToAI)
+			print(f'ai move {aiMove}')
 			y, x = from1Dto2D(aiMove)
-
+			print(f'ai sign is and turn is: {self.turn.sign}, {self.turn.user}')
 			self.grid[y][x] = self.turn.sign
-			print(self.grid)
+			print(f'grid after ai move {self.grid}')
 
 			self.drawImage()
 
@@ -189,7 +156,7 @@ class TicTacToe(TwoPlayersGame):
 			if aiWon:
 				code = 10
 			else:
-				self.turn = self.nextTurn()
+				self.nextTurn()
 				code = 0
 		self.drawImage()
 		return code
@@ -219,7 +186,7 @@ class TicTacToe(TwoPlayersGame):
 
 		self.gameID = gameID
 		self.player1 = TicTacToePlayer(gameData['player1ID'], Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/x.png'), 'x')
-		if gameData['player2ID'] == 0:
+		if gameData['player2ID'] == 'AI':
 			self.player2 = TicTacToeAI('AI', Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o')
 		else:
 			self.player2 = TicTacToePlayer(gameData['player2ID'], Image.open(f'{os.getcwd()}/modules/tic_tac_toe/src/o.png'), 'o')
