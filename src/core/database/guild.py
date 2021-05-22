@@ -207,15 +207,18 @@ class Guild(AbstractGuild):
 			'SELECT * FROM games WHERE guildID = ? AND gameType = ? AND userIDs LIKE ?',
 			self.guildID,
 			gameType,
-			f'%{discordID}%'
+			f'%{discordID}%',
+			table='games'
 		) if gameType != 'any' else self.db.makeRequest(
 			# EXPLANATION: select all games that are from this guild and include userID in userIDs
 			'SELECT * FROM games WHERE guildID = ? AND userIDs LIKE ?',
 			self.guildID,
-			f'%{discordID}%'
+			f'%{discordID}%',
+			table='games'
 		)
 		for game in dbGames:
-			if str(discordID) in game[3].split(','):
+			if str(discordID) in game['userIDs']:
+				game.pop('guildID')
 				games.append(
 					PapGame(**game)
 				)
@@ -390,7 +393,7 @@ class Guild(AbstractGuild):
 		"""
 		Deletes accept
 		"""
-		check = self._checkAccept(discordID)
+		check = self._checkGameRequest(discordID)
 		if check:
 			self.db.makeRequest(
 				"DELETE FROM gameRequests WHERE (discordID = ? OR discord2ID = ?) AND guildID = ?",
