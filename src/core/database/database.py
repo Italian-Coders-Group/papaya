@@ -5,6 +5,8 @@ from core.abc.database.database import AbstractDatabase
 from core.database.backend import SqlBackend
 from core.database.guild import Guild
 
+import itertools
+
 
 _tables: Dict[str, List[str] ] = {
 	'users': [
@@ -77,6 +79,9 @@ class Database(AbstractDatabase):
 		:param args: arguments for value sanitizing
 		:return: a List with the result (can be emtpy)
 		"""
+		if table == '':
+			return _fromTupleListToList(self.backend.makeRequest(sql, *args))
+
 		return _makeDictionary( table, self.backend.makeRequest(sql, *args) )
 
 	def makeUniqueRequest(self, sql: str, *args, convertSingle: bool = True, table: str = '') -> Union[ List[ Dict[str, Any] ], Dict[str, Any] ]:
@@ -90,6 +95,9 @@ class Database(AbstractDatabase):
 		:param args: arguments for value sanitizing
 		:return: a Single Object with the result (can be emtpy)
 		"""
+		if table == '':
+			return _fromTupleToList(self.backend.makeUniqueRequest(sql, *args))
+
 		return _makeUniqueDictionary( table, self.backend.makeUniqueRequest(sql, *args))
 
 	def save( self ) -> None:
@@ -129,3 +137,14 @@ def _makeUniqueDictionary( table: str, queryResult: Any) -> Dict[str, Any]:
 	else:
 		return {pos:  value for pos, value in enumerate(queryResult)}
 	return dictionary
+
+
+def _fromTupleListToList(myTuple: List[Tuple]) -> List:
+	return list(itertools.chain(*myTuple))
+
+
+def _fromTupleToList(myTuple: Tuple) -> List:
+	out = []
+	for value in myTuple:
+		out.append(value)
+	return out
