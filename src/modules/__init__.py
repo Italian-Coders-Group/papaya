@@ -42,3 +42,7 @@ def reloadGame(name: str):
 	if name in __games.keys():
 		getattr( __games[ name ], 'reloadModules', placeHolderFunc )()
 		moduleUtils.reload(__games[name], __games)
+
+
+if __name__ == '__main__':
+	print('test')

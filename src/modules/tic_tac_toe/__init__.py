@@ -14,6 +14,7 @@ import os
 from core.fileSystem import File as localFile
 from core import utils
 import requests
+from .gameUtils import check_for_win
 
 # TODO: REDO ENTIRE GAMESYSTEM DUE TO DATASTUFF CHANGES
 
@@ -34,12 +35,18 @@ import requests
 async def ttt(server: AbstractServer, msg: Message):
 
 	try:
-		gameRequest = server.GetDatabase().makeGameRequest(msg.author.id, msg.mentions[0].id, msg.channel.id, 'tic tac toe') if msg.mentions else False
-		print(not gameRequest)
+		gameRequest = server.GetDatabase().makeGameRequest(
+			discordID=msg.author.id,
+			discordID2=msg.mentions[0].id,
+			channelID=msg.channel.id,
+			gametype='tic tac toe') if msg.mentions else False
 		gameID = gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id] if msg.mentions else [msg.author.id, 0])
 		player1 = msg.author
 		player2 = None if not msg.mentions else msg.mentions[0]
 		newGame = TicTacToe(player1=player1, player2=player2, data=None, gameID=gameID)
+		if not msg.mentions:
+			server.GetDatabase().initStatsForUserInGuild(msg.author.id, 'tic tac toe')
+
 		server.GetDatabase().setGame(
 			PapGame(
 				gameID=gameID,
@@ -90,20 +97,32 @@ async def draw(server: AbstractServer, msg: Message):
 				await msg.channel.send("The game is still going on")
 			elif code == 1:
 				await msg.channel.send(f"Congrats {msg.author.mention} you won")
-				for userid in userIDs:
-					if userid == msg.channel.id:
-						server.GetDatabase().saveStatsForUserInGuild(userID=userid, win=True, gameType='tic tac toe')
+				for userid in userIDs.split(','):
+					if userid == msg.author.id:
+						server.GetDatabase().saveStatsForUserInGuild(
+							userID=str(userid),
+							loss=True,
+							gameType='tic tac toe')
 					else:
-						server.GetDatabase().saveStatsForUserInGuild(userID=userid, loss=True, gameType='tic tac toe')
+						server.GetDatabase().saveStatsForUserInGuild(
+							userID=str(userid),
+							win=True,
+							gameType='tic tac toe')
 				still_live = False
 			elif code == 10:
 				await msg.channel.send("Sorry but you lost and our AI WON, ggs")
-				server.GetDatabase().saveStatsForUserInGuild(userID=msg.author.id, loss=True, gameType='tic tac toe')
+				server.GetDatabase().saveStatsForUserInGuild(
+					userID=msg.author.id,
+					loss=True,
+					gameType='tic tac toe')
 				still_live = False
 			elif code == 100:
 				await msg.channel.send("This is a tie")
-				for userid in userid:
-					server.GetDatabase().saveStatsForUserInGuild(userID=userid, tie=True, gameType='tic tac toe')
+				for userid in userIDs.split(','):
+					server.GetDatabase().saveStatsForUserInGuild(
+						userID=str(userid),
+						tie=True,
+						gameType='tic tac toe')
 				still_live = False
 
 			drawEmbed = embed(
@@ -117,7 +136,7 @@ async def draw(server: AbstractServer, msg: Message):
 			await msg.channel.send(file=file, embed=drawEmbed)
 			updateGame = PapGame(
 				gameData.gameID,
-				PapGame.deserializeUsers(gameData.userIDs),
+				[int(username) for username in (gameData.userIDs.replace(',', ' ').split(' '))],
 				resumeGame.getData(),
 				gameData.gameType,
 				still_live
@@ -129,13 +148,11 @@ async def draw(server: AbstractServer, msg: Message):
 		await msg.channel.send(f"There is no game for you bud.")
 
 
-
 @Command
 async def tttstats(server: AbstractServer, msg: Message):
 	user = server.GetDatabase().getStatsForUserInGuild(msg.author.id)
 	await msg.channel.send(f"Here are your stats. Wins: {user[3]}. Losses: {user[4]}. Ties: {user[5]}")
 	print(user)
-
 
 
 # @Command
