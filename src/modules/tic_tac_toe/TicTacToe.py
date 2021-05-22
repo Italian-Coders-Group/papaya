@@ -33,10 +33,8 @@ class TicTacToe(TwoPlayersGame):
 			                                                                                                                                                    'o')
 			self.grid = [['', '', ''], ['', '', ''], ['', '', '']]
 			self.turn = self.player2 if self.player2.user != 'AI' else self.player1
-			self.pvp = True
 		else:
 			self.parseData(data)
-			self.pvp = False
 
 		self.players = iter([self.player1, self.player2])
 		self.gameID = gameID
@@ -105,7 +103,6 @@ class TicTacToe(TwoPlayersGame):
 		}
 		self.drawImage()
 		self.grid, code = self.turn.makeMove(data=dataToPlayer)
-		print(f'grid after player move{self.grid}')
 
 		if code == 2:
 			# This indicates that the position is not valid, as it's already been taken
@@ -138,17 +135,14 @@ class TicTacToe(TwoPlayersGame):
 
 		self.nextTurn()
 
-		if not self.pvp:
+		if self.turn.user == 'AI':
 			dataToAI = {
 				'grid': self.grid
 			}
 
 			aiMove = self.player2.makeMove(dataToAI)
-			print(f'ai move {aiMove}')
 			y, x = from1Dto2D(aiMove)
-			print(f'ai sign is and turn is: {self.turn.sign}, {self.turn.user}')
 			self.grid[y][x] = self.turn.sign
-			print(f'grid after ai move {self.grid}')
 
 			self.drawImage()
 
