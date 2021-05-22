@@ -225,7 +225,7 @@ class Guild(AbstractGuild):
 		PapGame]:
 		pass
 
-	def getLiveGameForUserForGametype(self, discordID: int, gameType: str = 'any', user: Optional[PapUser] = None) -> List[PapGame]:
+	def getLiveGameForUserForGametype(self, discordID: int, gameType: str = 'any', user: Optional[PapUser] = None) -> PapGame:
 		"""
 		Returns a list with all live games that this user is playing
 		:param gameType: the type of the game, use "any" for any type
@@ -342,22 +342,25 @@ class Guild(AbstractGuild):
 
 		return rank[0][0] if not None else "no rank"
 
-	def makeGameRequest(self, discordID: int, discordID2: int, channelID: int):
+	def makeGameRequest(self, discordID: int, discordID2: int, channelID: int, gametype: str):
 		"""
 		Make an accept action
 		:param channelID:
 		:param discordID:
 		:param discordID2:
+		:param gametype:
 		:return:
 		"""
 
-		check = self._checkAccept(discordID)
+		check = self._checkGameRequest(discordID)
 		if not check:
 			self.db.makeRequest(
-				'INSERT INTO gameRequests(discordID, guildID, channelID) VALUES (?, ?, ?)',
+				'INSERT INTO gameRequests(discordID, discord2ID, guildID, channelID, gameType) VALUES (?, ?, ?, ?, ?)',
 				discordID,
+				discordID2,
 				self.guildID,
-				channelID
+				channelID,
+				gametype
 			)
 			self.db.save()
 			return True
@@ -409,24 +412,61 @@ class Guild(AbstractGuild):
 			'SELECT * FROM gameRequests WHERE discordID = ? AND guildID = ?',
 			userID,
 			self.guildID,
-			table='gameRequest'
+			table='gameRequests'
 		)
 		if len(requests) > 0:
 			return requests[0]
 		else:
 			return {'userID': None, 'user2ID': None, 'guildID': None, 'channelID': None}
 
+	def _checkForUserInStats(self, userID: str):
+		"""
+		This checks if the user has been inserted into the stats table.
+		:param userID:
+		:return:
+		"""
+
+		data = self.db.makeUniqueRequest('SELECT discordID FROM stats WHERE discordID = ?',
+		                                 userID)
+
+		if len(data) > 0:
+			return True
+
+		return False
+
+	def initStatsForUserInGuild(self, userID: str, gameType: str):
+		"""
+		Enters the record for that user and gametype to allow the function 'saveStatsForUserInGuild'
+		:param gameType:
+		:param userID:
+		:return:
+		"""
+		if not self._checkForUserInStats(userID):
+			self.db.makeRequest('INSERT INTO stats(guildID, discordID, gameType) VALUES (?, ?, ?)',
+			                    self.guildID,
+			                    userID,
+			                    gameType)
+
+			self.db.save()
+
 	def saveStatsForUserInGuild(self, userID: str, gameType: str, loss: bool = False, win: bool = False, tie: bool = False):
 		"""
 		Updates +1 if win, tie or loss is True.
 		:param gameType:
 		:param userID:
+		:param loss:
+		:param win:
+		:param tie:
 		:return:
 		"""
 
+		winPoint = 1 if win else 0
+		lossPoint = 1 if loss else 0
+		tiePoint = 1 if tie else 0
+
 		self.db.makeRequest(
 			'UPDATE stats SET wins = wins + ?, losses = losses + ?, ties = ties + ? WHERE guildID = ? AND discordID = ? AND gameType = ?',
-			int(loss), int(win), int(tie),
+			winPoint, lossPoint, tiePoint,
 			self.guildID,
 			userID,
 			gameType

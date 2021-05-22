@@ -108,7 +108,7 @@ class AbstractGuild(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def getLiveGameForUserForGametype(self, discordID: int, gameType: str = 'any', user: Optional[PapUser] = None) -> List[PapGame]:
+	def getLiveGameForUserForGametype(self, discordID: int, gameType: str, user: Optional[PapUser] = None) -> PapGame:
 		"""
 		Returns a list with all live games that this user is playing
 		:param gameType: the type of the game, use "any" for any type
@@ -164,12 +164,13 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 
 	@abstractmethod
-	def makeGameRequest(self, discordID: int, discordID2: int,  channelID: int):
+	def makeGameRequest(self, discordID: int, discordID2: int,  channelID: int, gametype: str):
 		"""
 		Make an accept action
 		:param discordID:
 		:param discordID2:
 		:param channelID:
+		:param gametype:
 		:return:
 		"""
 
@@ -190,11 +191,22 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 
 	@abstractmethod
-	def saveStatsForUserInGuild( self, userID: str, gameType: str, stat: str ):
+	def initStatsForUserInGuild(self, userID: str, gameType: str):
+		"""
+		Enters the record for that user and gametype to allow the function 'saveStatsForUserInGuild'
+		:param gameType:
+		:param userID:
+		:return:
+		"""
+
+	@abstractmethod
+	def saveStatsForUserInGuild( self, userID: str, gameType: str, win: bool = False, loss: bool = False, tie: bool = False ):
 		"""
 		Updates +1 if win, tie or loss is True.
 		:param gameType:
 		:param userID:
-		:param stat:
+		:param win:
+		:param loss:
+		:param tie:
 		:return:
 		"""
