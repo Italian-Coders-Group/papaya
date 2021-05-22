@@ -16,6 +16,7 @@ from core import utils
 import requests
 from .gameUtils import check_for_win
 
+
 # TODO: REDO ENTIRE GAMESYSTEM DUE TO DATASTUFF CHANGES
 
 
@@ -33,13 +34,16 @@ from .gameUtils import check_for_win
 
 @Command
 async def ttt(server: AbstractServer, msg: Message):
-
 	try:
-		gameRequest = server.GetDatabase().makeGameRequest(
-			discordID=msg.author.id,
-			discordID2=msg.mentions[0].id,
-			channelID=msg.channel.id,
-			gametype='tic tac toe') if msg.mentions else False
+
+		if msg.mentions:
+			server.GetDatabase().makeGameRequest(
+				discordID=msg.author.id,
+				discordID2=msg.mentions[0].id,
+				channelID=msg.channel.id,
+				gametype='tic tac toe'
+			)
+
 		gameID = gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id] if msg.mentions else [msg.author.id, 0])
 		player1 = msg.author
 		player2 = None if not msg.mentions else msg.mentions[0]
@@ -53,7 +57,7 @@ async def ttt(server: AbstractServer, msg: Message):
 				gameType='tic tac toe',
 				userIDs=[msg.author.id, msg.mentions[0].id] if msg.mentions else [msg.author.id, 0],
 				gameData=newGame.getData(),
-				live=not gameRequest
+				live=True if not msg.mentions else False
 			)
 		)
 
@@ -75,7 +79,6 @@ async def ttt(server: AbstractServer, msg: Message):
 
 @Command
 async def draw(server: AbstractServer, msg: Message):
-
 	try:
 		gameData: PapGame = server.GetDatabase().getLiveGameForUserForGametype(discordID=msg.author.id, gameType="tic tac toe")
 		still_live = True
@@ -153,7 +156,6 @@ async def tttstats(server: AbstractServer, msg: Message):
 	user = server.GetDatabase().getStatsForUserInGuild(msg.author.id)
 	await msg.channel.send(f"Here are your stats. Wins: {user[3]}. Losses: {user[4]}. Ties: {user[5]}")
 	print(user)
-
 
 # @Command
 # async def testbase(server: AbstractServer, msg: Message):
