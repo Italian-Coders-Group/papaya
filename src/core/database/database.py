@@ -43,7 +43,8 @@ _tables: Dict[str, List[str] ] = {
 		'userID',
 		'user2ID',
 		'guildID',
-		'channelID'
+		'channelID',
+		'gameType'
 	]
 }
 
