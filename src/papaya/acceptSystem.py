@@ -40,7 +40,7 @@ class AcceptSystem:
 					color=utils.getColor(RGB="0,255,0")
 				)
 				await msg.channel.send(embed=acceptedEmbed)
-				game = database.getGamesForUser(msg.author.id)[0]
+				game = database.getGamesForUser(msg.author.id, gameType=acceptObj['gameType'])[0]
 				database.setGame(
 					PapGame(
 						gameID=game.gameID,
