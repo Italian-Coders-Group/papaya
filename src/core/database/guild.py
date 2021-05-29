@@ -281,7 +281,7 @@ class Guild(AbstractGuild):
 
 		return return_list
 
-	def getStatsForUserInGuild(self, discordID: int, gameType: str = "any") -> PapStats:
+	def getStatsForUserForGameTypeInGuild(self, discordID: int, gameType: str) -> PapStats:
 		"""
 		Returns a user in the guild with his stats, None if not found
 		:param discordID:
@@ -328,6 +328,15 @@ class Guild(AbstractGuild):
 					gameType=user['gameType']
 				)
 			)
+
+	def getStatsForUserInGuild(self, userID: int, gameType: str = 'any') -> PapStats:
+		"""
+		Returns a user in the guild with his stats, None if not found
+		:param userID:
+		:param gameType:
+		:return: user
+		"""
+		pass
 
 	def getRankForUserInGame(self, wins: int, losses: int, ties: int, gameType: str) -> str:
 		"""
