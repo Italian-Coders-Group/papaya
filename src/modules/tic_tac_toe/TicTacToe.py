@@ -15,7 +15,7 @@ from .Grid import Grid
 from core import utils
 from core.dataclass.PapGame import PapGame
 from core.abc.games.TwoPlayersGame import TwoPlayersGame
-from .gameUtils import check_for_win, from1Dto2D, from2Dto1D
+from .gameUtils import check_for_win, from1Dto2D, from2Dto1D, positionToPixel
 
 
 # from core.database import get_game_id
@@ -58,32 +58,51 @@ class TicTacToe(TwoPlayersGame):
 
 		# raise NotImplementedError('turn error')
 
-	def drawImage(self):
+	def drawImage(self, cells: List[ int ] = None):
 		"""
-		This function saves the current state of
-		:return:
+		This funcions saves the image drawn
 		"""
 
-		base_grid = Image.new('RGB', (156, 156), (255, 255, 255))
+		positions = []
+
+		if not cells:
+			pass
+		else:
+			for cell in cells:
+				positions.append(positionToPixel(from1Dto2D(cell)))
+
+		base_grid = Image.new('RGBA', (156, 156), (255, 255, 255, 255))
 		draw = ImageDraw.Draw(base_grid)
 
-		draw.line([50, 0, 50, 155], fill=(0, 0, 0), width=3)
-		draw.line([103, 0, 103, 155], fill=(0, 0, 0), width=3)
-		draw.line([0, 50, 155, 50], fill=(0, 0, 0), width=3)
-		draw.line([0, 103, 155, 103], fill=(0, 0, 0), width=3)
+		draw.line([51, 0, 51, 155], fill=(0, 0, 0), width=3)
+		draw.line([104, 0, 104, 155], fill=(0, 0, 0), width=3)
+		draw.line([0, 51, 155, 51], fill=(0, 0, 0), width=3)
+		draw.line([0, 104, 155, 104], fill=(0, 0, 0), width=3)
 
 		x = self.player1.symbol
 		o = self.player2.symbol
-		spacer = 53
 
 		for i, row in enumerate(self.grid):
 			for j, cell in enumerate(row):
-
+				posX, posY, *args = positionToPixel((i, j))
 				if cell == 'x':
-					base_grid.paste(x, (i * spacer, j * spacer), x)
+					base_grid.paste(x, (posX, posY), x)
 
 				if cell == 'o':
-					base_grid.paste(o, (i * spacer, j * spacer), o)
+					base_grid.paste(o, (posX, posY), o)
+
+		if not positions:
+			pass
+		else:
+			winBoxOverlay = Image.new('RGBA', size=(156, 156), color=(0, 0, 0, 0))
+			winBoxDraw = ImageDraw.Draw(winBoxOverlay)
+
+			for position in positions:
+				x, y, x1, y1 = position
+				winBoxDraw.rectangle(xy=[(x, y), (x1, y1)],
+				                     fill=(0, 255, 0) + (150,))
+
+			base_grid = Image.alpha_composite(base_grid, winBoxOverlay)
 
 		base_grid.save(f'{os.getcwd()}/modules/tic_tac_toe/src/tictactoe_images/{self.gameID}.png', format='PNG')
 		# /var/www/papaya/papayabot/games/imagesToSend -> path on remote
@@ -101,7 +120,7 @@ class TicTacToe(TwoPlayersGame):
 			'grid': self.grid,
 			'coords': coordinates
 		}
-		self.drawImage()
+
 		self.grid, code = self.turn.makeMove(data=dataToPlayer)
 
 		if code == 2:
@@ -111,10 +130,10 @@ class TicTacToe(TwoPlayersGame):
 			# indicates that the position is invalid, both as parameters or space available on the grid
 			return code
 
-		hasWon = check_for_win(self.grid, self.turn.sign)
+		hasWon, cells = check_for_win(self.grid, self.turn.sign)
 
 		if hasWon:
-			self.drawImage()
+			self.drawImage(cells=cells)
 			return 1
 
 		v = []
@@ -144,11 +163,10 @@ class TicTacToe(TwoPlayersGame):
 			y, x = from1Dto2D(aiMove)
 			self.grid[y][x] = self.turn.sign
 
-			self.drawImage()
-
-			aiWon = check_for_win(self.grid, self.turn.sign)
+			aiWon, cells = check_for_win(self.grid, self.turn.sign)
 			if aiWon:
-				code = 10
+				self.drawImage(cells=cells)
+				return 10
 			else:
 				self.nextTurn()
 				code = 0
