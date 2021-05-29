@@ -34,7 +34,7 @@ class TicTacToeAI(Player):
 						boardCopy[y].append(cell)
 				posY, posX = from1Dto2D(possibleMove)
 				boardCopy[posY][posX] = sign
-				if check_for_win(boardCopy, sign):
+				if check_for_win(boardCopy, sign)[0]:
 					move = possibleMove
 					return move
 
