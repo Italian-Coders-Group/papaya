@@ -151,11 +151,11 @@ async def draw(server: AbstractServer, msg: Message):
 		await msg.channel.send(f"There is no game for you bud.")
 
 
-@Command
-async def tttstats(server: AbstractServer, msg: Message):
-	user = server.GetDatabase().getStatsForUserInGuild(msg.author.id)
-	await msg.channel.send(f"Here are your stats. Wins: {user[3]}. Losses: {user[4]}. Ties: {user[5]}")
-	print(user)
+# @Command
+# async def tttstats(server: AbstractServer, msg: Message):
+# 	user = server.GetDatabase().getStatsForUserInGuild(msg.author.id)
+# 	await msg.channel.send(f"Here are your stats. Wins: {user[3]}. Losses: {user[4]}. Ties: {user[5]}")
+# 	print(user)
 
 # @Command
 # async def testbase(server: AbstractServer, msg: Message):
@@ -166,12 +166,14 @@ async def tttstats(server: AbstractServer, msg: Message):
 #     await msg.channel.send(file=File(buffer, "testBase.png"))
 
 
-# @Command
-# async def grid(server: AbstractServer, msg: Message):
-#     games = [['x', 'x', 'o'], ['o', 'x', 'x'], ['x', 'o', 'o']]
-#     test = check_for_win(games, 'x')
+@Command
+async def grid(server: AbstractServer, msg: Message):
 
-#     print(test)
+	games = [['o', 'o', 'o'],
+	         ['x', 'x', 'x'],
+	         ['x', 'x', 'x']]
+
+	print(check_for_win(games, 'o'))
 
 
 # @Command
