@@ -19,11 +19,9 @@ class TwoPlayersGame(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def drawImage(self) -> BytesIO:
+	def drawImage(self):
 		"""
-		This function returns a byte buffer containing the new image
-		and saves it for URL
-		:return: BytesIO
+		This funcions saves the image drawn
 		"""
 		pass
 
