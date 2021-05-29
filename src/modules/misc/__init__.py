@@ -81,25 +81,15 @@ async def surrender(server: AbstractServer, msg: Message):
             live=False
         )
     )
-    for userId in resumeGame.userIDs:
+    for userId in resumeGame.userIDs.split(','):
         if userId == msg.author.id:
-            server.GetDatabase().saveStatsForUserInGuild(userID=userId, loss=True)
+            server.GetDatabase().saveStatsForUserInGuild(userID=userId, loss=True, gameType=resumeGame.gameType)
         else:
-            server.GetDatabase().saveStatsForUserInGuild(userID=userId, win=True)
+            server.GetDatabase().saveStatsForUserInGuild(userID=userId, win=True, gameType=resumeGame.gameType)
 
     await msg.channel.send("You surrendered the game. Stats are updated.")
 
     pass
-
-
-@Command
-async def cancel(server: AbstractServer, msg: Message):
-    hasAccept = server.GetDatabase()._checkAccept( msg.author.id )
-    if not hasAccept:
-        await msg.channel.send("You have no games to accept")
-    else:
-        server.GetDatabase().delAccept(msg.author.id)
-        await msg.channel.send("Your game has been cancelled.")
 
 
 @Command
