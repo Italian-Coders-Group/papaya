@@ -11,6 +11,7 @@ def convertCoords(inputValue: str):
 		'tl': (0, 0),
 		'11': (0, 0),
 		'topleft': (0, 0),
+		'1': (0, 0),
 		't': (0, 1),
 		'top': (0, 1),
 		'12': (0, 1),
@@ -57,7 +58,7 @@ class TicTacToePlayer(Player):
 		grid = data['grid']
 		coords = data['coords']
 
-		posX, posY = convertCoords(coords)
+		posY, posX = convertCoords(coords)
 
 		if (posX is None) and (posY is None):
 			return grid, 3
