@@ -48,8 +48,13 @@ async def ttt(server: AbstractServer, msg: Message):
 		player1 = msg.author
 		player2 = None if not msg.mentions else msg.mentions[0]
 		newGame = TicTacToe(player1=player1, player2=player2, data=None, gameID=gameID)
+		live = 0
+
 		if not msg.mentions:
 			server.GetDatabase().initStatsForUserInGuild(msg.author.id, 'tic tac toe')
+			live = 1
+		else:
+			live = 2
 
 		server.GetDatabase().setGame(
 			PapGame(
@@ -57,7 +62,7 @@ async def ttt(server: AbstractServer, msg: Message):
 				gameType='tic tac toe',
 				userIDs=[msg.author.id, msg.mentions[0].id] if msg.mentions else [msg.author.id, 0],
 				gameData=newGame.getData(),
-				live=True if not msg.mentions else False
+				live=live
 			)
 		)
 
