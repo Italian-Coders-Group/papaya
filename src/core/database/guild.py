@@ -398,7 +398,7 @@ class Guild(AbstractGuild):
 
 		return returnCheck
 
-	def delGameRequest(self, discordID: int):
+	def delGameRequest(self, discordID: int, accepted: bool):
 		"""
 		Deletes accept
 		"""
@@ -410,6 +410,11 @@ class Guild(AbstractGuild):
 				discordID,
 				self.guildID
 			)
+			# if not accepted:
+			# 	self.db.makeRequest(
+			# 		"UPDATE games SET live = 3 WHERE userIDs like ?",
+			# 		f'%{discordID}%'
+			# 	)
 			self.db.save()
 			return True
 		return False

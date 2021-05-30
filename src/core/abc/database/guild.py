@@ -175,9 +175,10 @@ class AbstractGuild(metaclass=ABCMeta):
 		"""
 
 	@abstractmethod
-	def delGameRequest(self, userID: int):
+	def delGameRequest(self, userID: int, accepted: bool):
 		"""
 		Deletes accept
+		:param accepted:
 		:param userID:
 		:return:
 		"""
