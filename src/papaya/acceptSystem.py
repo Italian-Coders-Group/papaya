@@ -27,11 +27,11 @@ class AcceptSystem:
 			accepted: bool = None
 
 			if (acceptObj['channelID'] == msg.channel.id) and ("accept" in msg.content):
-				database.delGameRequest(msg.author.id)
 				accepted = True
+				database.delGameRequest(msg.author.id, accepted)
 			elif (acceptObj['channelID'] == msg.channel.id) and ("deny" in msg.content):
-				database.delGameRequest(msg.author.id)
 				accepted = False
+				database.delGameRequest(msg.author.id, accepted)
 
 			if accepted:
 				acceptedEmbed = utils.embed(
