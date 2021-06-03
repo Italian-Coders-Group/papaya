@@ -1,19 +1,14 @@
-from .TicTacToe import TicTacToe
-from core.commandSystem import Command
-from core.abc.server import AbstractServer
-from core.database.database import Database
-from core.dataclass.PapGame import PapGame
-from core.dataclass.PapUser import PapUser
-from core.dataclass import utils as gameUtils
-from core.exception import *
-from discord import Message, File
-from core.utils import embed, getColor
-from PIL import Image
-import io
 import os
-from core.fileSystem import File as localFile
-from core import utils
-import requests
+
+from discord import Message, File
+
+from core.abc.server import AbstractServer
+from core.commandSystem import Command
+from core.dataclass import utils as gameUtils
+from core.dataclass.PapGame import PapGame
+from core.exception import *
+from core.utils import embed, getColor
+from .TicTacToe import TicTacToe
 from .gameUtils import check_for_win
 
 
@@ -36,40 +31,39 @@ from .gameUtils import check_for_win
 async def ttt(server: AbstractServer, msg: Message):
 	try:
 
-		if msg.mentions:
-			server.GetDatabase().makeGameRequest(
-				discordID=msg.author.id,
-				discordID2=msg.mentions[0].id,
-				channelID=msg.channel.id,
-				gametype='tic tac toe'
-			)
-
 		gameID = gameUtils.getRandomGameID([msg.author.id, msg.mentions[0].id] if msg.mentions else [msg.author.id, 0])
 		player1 = msg.author
 		player2 = None if not msg.mentions else msg.mentions[0]
 		newGame = TicTacToe(player1=player1, player2=player2, data=None, gameID=gameID)
-		live = 0
 
 		if not msg.mentions:
 			server.GetDatabase().initStatsForUserInGuild(msg.author.id, 'tic tac toe')
 			live = 1
-		else:
-			live = 2
 
-		server.GetDatabase().setGame(
-			PapGame(
-				gameID=gameID,
-				gameType='tic tac toe',
-				userIDs=[msg.author.id, msg.mentions[0].id] if msg.mentions else [msg.author.id, 0],
-				gameData=newGame.getData(),
-				live=live
+			server.GetDatabase().setGame(
+				PapGame(
+					gameID=gameID,
+					gameType='tic tac toe',
+					userIDs=[msg.author.id, msg.mentions[0].id] if msg.mentions else [msg.author.id, 0],
+					gameData=newGame.getData(),
+					live=live
+				)
 			)
-		)
 
-		if not msg.mentions:
 			tttContent = f'This game is between {msg.author.mention} and our AI'
+
 		else:
-			tttContent = f'This game is between {msg.author.mention} and {msg.mentions[0].mention}. Please wait until your opponent accept the game.'
+			if msg.mentions:
+				server.GetDatabase().make.GameRequest(
+					discordID=msg.author.id,
+					discordID2=msg.mentions[0].id,
+					channelID=msg.channel.id,
+					gameID=gameID,
+					gametype='tic tac toe'
+				)
+
+			tttContent = f'This game is between {msg.author.mention} and {msg.mentions[0].mention}.' \
+						 ' Please wait until your opponent accept the game.'
 
 		tttEmbed = embed(
 			title='New tic tac toe Game.',
@@ -85,7 +79,10 @@ async def ttt(server: AbstractServer, msg: Message):
 @Command
 async def draw(server: AbstractServer, msg: Message):
 	try:
-		gameData: PapGame = server.GetDatabase().getLiveGameForUserForGametype(discordID=msg.author.id, gameType="tic tac toe")
+		gameData: PapGame = server.GetDatabase().getLiveGameForUserForGametype(
+			discordID=msg.author.id,
+			gameType="tic tac toe"
+		)
 		still_live = True
 
 		resumeGame = TicTacToe(player1=None, player2=None, data=gameData, gameID=gameData.gameID)
@@ -138,7 +135,10 @@ async def draw(server: AbstractServer, msg: Message):
 				content="X: Player1 \tO: Player2",
 				color=getColor(random=True)
 			)
-			file = File(f'{os.getcwd()}/modules/tic_tac_toe/src/tictactoe_images/{resumeGameID}.png', filename='test.png')
+			file = File(
+				f'{os.getcwd()}/modules/tic_tac_toe/src/tictactoe_images/{resumeGameID}.png',
+				filename='test.png'
+			)
 			drawEmbed.set_image(url=f'attachment://test.png')
 			# drawEmbed.add_field(name="game_status", value={'Still live' if still_live else 'Ended'}, inline=False)
 			await msg.channel.send(file=file, embed=drawEmbed)
@@ -171,15 +171,13 @@ async def draw(server: AbstractServer, msg: Message):
 #     await msg.channel.send(file=File(buffer, "testBase.png"))
 
 
-@Command
-async def grid(server: AbstractServer, msg: Message):
-
-	games = [['o', 'o', 'o'],
-	         ['x', 'x', 'x'],
-	         ['x', 'x', 'x']]
-
-	print(check_for_win(games, 'o'))
-
+# @Command
+# async def grid(server: AbstractServer, msg: Message):
+# 	games = [['o', 'o', 'o'],
+# 			 ['x', 'x', 'x'],
+# 			 ['x', 'x', 'x']]
+#
+# 	print(check_for_win(games, 'o'))
 
 # @Command
 # async def get_state(server: AbstractServer, msg: Message):

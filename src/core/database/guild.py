@@ -5,6 +5,7 @@ from core.abc.database.guild import AbstractGuild
 from core.dataclass import PapStats
 from core.dataclass.PapGame import PapGame
 from core.dataclass.PapUser import PapUser
+from core.exception import GameNotFound
 
 
 class Guild(AbstractGuild):
@@ -354,9 +355,10 @@ class Guild(AbstractGuild):
 
 		return rank[0][0] if not None else "no rank"
 
-	def makeGameRequest(self, discordID: int, discordID2: int, channelID: int, gametype: str):
+	def makeGameRequest(self, discordID: int, discordID2: int, channelID: int, gameID: str, gametype: str):
 		"""
 		Make an accept action
+		:param gameID:
 		:param channelID:
 		:param discordID:
 		:param discordID2:
@@ -367,7 +369,7 @@ class Guild(AbstractGuild):
 		check = self._checkGameRequest(discordID)
 		if not check:
 			self.db.makeRequest(
-				'INSERT INTO gameRequests(discordID, discord2ID, guildID, channelID, gameType) VALUES (?, ?, ?, ?, ?)',
+				'INSERT INTO gameRequests(discordID, discord2ID, guildID, channelID, gameID, gameType) VALUES (?, ?, ?, ?, ?, ?)',
 				discordID,
 				discordID2,
 				self.guildID,

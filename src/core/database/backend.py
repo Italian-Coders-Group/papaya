@@ -27,6 +27,7 @@ class SqlBackend(AbstractBackend):
 			'''
 			CREATE TABLE IF NOT EXISTS games (
 				guildID INT NOT NULL,
+				channelID INT NOT NULL,
 				gameID TEXT NOT NULL,
 				gameType TEXT NOT NULL,
 				userIDs TEXT NOT NULL,
@@ -73,8 +74,9 @@ class SqlBackend(AbstractBackend):
 				discord2ID text NOT NULL,
 				guildID int NOT NULL,
 				channelID int not null,
+				gameID text NOT NULL,
 				gameType text not null,
-				CONSTRAINT PK_gameRequests PRIMARY KEY (discordID, discord2ID, guildID, gameType)
+				CONSTRAINT PK_gameRequests PRIMARY KEY (gameID)
 			)
 			'''
 		)
