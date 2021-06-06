@@ -116,25 +116,6 @@ class AbstractGuild(metaclass=ABCMeta):
 		:param user: ALTERNATIVE: a PapUser
 		:return: list of games
 		"""
-		gameData = self.db.makeUniqueRequest(
-			# EXPLANATION: select the game that is live, from this guild, is of the type gameType,
-			# and include userID in userIDs
-			'SELECT * FROM games WHERE live = 1 AND guildID = ? AND gameType = ? AND userIDs LIKE ?',
-			self.guildID,
-			gameType,
-			f'%{discordID}%',
-			table='games'
-		)
-		# 	if gameType != 'any' else self.db.makeRequest(
-		# 	# EXPLANATION: select all games that are live, from this guild and include userID in userIDs
-		# 	'SELECT * FROM games WHERE live = 1 AND guildID = ? AND userIDs LIKE ?',
-		# 	self.guildID,
-		# 	f'%{discordID}%',
-		# 	table='games'
-		# )
-
-		returnGame = PapGame(**gameData)
-		return returnGame
 
 	@abstractmethod
 	def getLiveGamesForGuild( self ) -> List[ PapGame ]:
